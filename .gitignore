@@ -1,6 +1,7 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# 파일 무시 설정에 대한 자세한 내용은 위 링크를 참조하세요.
 
-# dependencies
+# dependencies (의존성 라이브러리)
 /node_modules
 /.pnp
 .pnp.*
@@ -10,32 +11,33 @@
 !.yarn/releases
 !.yarn/versions
 
-# testing
+# testing (테스트 결과물)
 /coverage
 
-# next.js
+# next.js (Next.js 빌드 및 실행 관련 파일)
 /.next/
 /out/
 
-# production
+# production (프로덕션 빌드 결과물)
 /build
 
-# misc
+# misc (기타 시스템 및 보안 파일)
 .DS_Store
 *.pem
 
-# debug
+# debug (디버깅 로그 파일)
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files (환경 변수 파일: 보안상 중요하므로 저장소 제외 권장)
 .env*
 
-# vercel
+# vercel (Vercel 배포 관련 설정 및 캐시)
 .vercel
 
-# typescript
+# typescript (타입스크립트 빌드 정보 및 선언 파일)
 *.tsbuildinfo
 next-env.d.ts
+/lib/generated/prisma
