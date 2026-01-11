@@ -1,0 +1,86 @@
+.container {
+  min-height: 100vh;
+  padding: 3rem 1.5rem;
+  background-color: #f8fafc;
+}
+
+.card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 2.5rem;
+  padding: 2rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.resultCard {
+  background-color: #2563eb;
+  color: white;
+  padding: 2rem;
+  border-radius: 2.5rem;
+  box-shadow: 0 20px 25px -5px rgba(37, 99, 235, 0.2);
+}
+
+.inputField {
+  width: 100%;
+  font-size: 1.875rem;
+  font-weight: 900;
+  padding: 1rem;
+  background-color: #f1f5f9;
+  color: #1e293b;
+  border-radius: 1rem;
+  border: none;
+  outline: none;
+  transition: all 0.2s;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.inputField::-webkit-outer-spin-button,
+.inputField::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.inputField:focus {
+  box-shadow: 0 0 0 2px #3b82f6;
+  background-color: #ffffff;
+}
+
+/* 작은 입력창 전용 스타일 (비과세액, 부양가족 등) */
+.smallInputField {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background-color: #f8fafc;
+  color: #334155;
+  font-weight: 700;
+  border-radius: 0.875rem;
+  border: 1px solid #f1f5f9;
+  outline: none;
+  transition: all 0.2s;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.smallInputField::-webkit-outer-spin-button,
+.smallInputField::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.smallInputField:focus {
+  border-color: #3b82f6;
+  background-color: #ffffff;
+  box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.1);
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  border-radius: 9999px;
+  background-color: #f3e8ff;
+  color: #9333ea;
+  border: 1px solid #e9d5ff;
+}
