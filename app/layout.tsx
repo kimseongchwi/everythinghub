@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "Everything Hub",
-    description: "성취의 잡다한 프로젝트 창고",
+    description: "내 스타일 대로 만든 잡다한 프로젝트 창고",
     siteName: "Everything Hub",
     images: [
       {

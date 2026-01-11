@@ -1,40 +1,367 @@
 .portfolioContainer {
   min-height: 100vh;
-  padding: 2rem;
-  background-color: #f8fafc;
+  background-color: #ffffff;
   color: #1e293b;
+  font-family: 'Inter', -apple-system, sans-serif;
+  line-height: 1.6;
 }
 
-.titleGlow {
+.sectionWrapper {
+  padding: 80px 20px;
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+
+
+/* Header */
+.header {
+  text-align: center;
+  padding: 100px 20px;
+}
+
+.title {
+  font-size: 3rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
   color: #0f172a;
-  font-size: 3.5rem;
-  font-weight: 900;
-  letter-spacing: -0.05em;
-  margin-bottom: 1rem;
 }
 
-.customButton {
-  background-color: #3b82f6;
-  color: white;
-  padding: 10px 24px;
-  border-radius: 12px;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.2s;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+.subtitle {
+  font-size: 1.25rem;
+  color: #64748b;
+  margin-bottom: 24px;
 }
 
-.customButton:hover {
-  transform: translateY(-2px);
-  background-color: #2563eb;
-  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.3);
+.contactInfo {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  color: #94a3b8;
+  font-size: 0.95rem;
 }
 
-.card {
+/* Section Titles */
+.sectionHeader {
+  margin-bottom: 40px;
+}
+
+.sectionTitle {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+/* Info Grid (Edu & Certs) */
+.infoGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+}
+
+@media (max-width: 768px) {
+  .infoGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.infoCard {
+  background: white;
+  padding: 24px;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+}
+
+.infoLabel {
+  display: block;
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin-bottom: 4px;
+}
+
+.infoValue {
+  color: #64748b;
+}
+
+/* Horizontal Scroll for Personal Projects */
+.horizontalScroll {
+  display: flex;
+  gap: 24px;
+  overflow-x: auto;
+  padding-bottom: 20px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+.horizontalScroll::-webkit-scrollbar {
+  height: 6px;
+}
+
+.horizontalScroll::-webkit-scrollbar-thumb {
+  background-color: #e2e8f0;
+  border-radius: 10px;
+}
+
+.scrollCard {
+  min-width: 320px;
   background: white;
   border: 1px solid #e2e8f0;
-  border-radius: 24px;
-  padding: 2rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  padding: 32px;
+  border-radius: 20px;
+  flex-shrink: 0;
+  transition: border-color 0.2s;
+}
+
+.scrollCard:hover {
+  border-color: #3b82f6;
+}
+
+/* Work Experience Grid */
+.experienceItem {
+  margin-bottom: 60px;
+}
+
+.companyHeader {
+  margin-bottom: 24px;
+}
+
+.companyName {
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+.workMeta {
+  color: #3b82f6;
+  font-weight: 600;
+}
+
+.workProjectGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 768px) {
+  .workProjectGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.workProjectCard {
+  background: white;
+  border: 1px solid #e2e8f0;
+  padding: 24px;
+  border-radius: 16px;
+}
+
+/* Button */
+.btnDetail {
+  margin-top: 20px;
+  background: #f1f5f9;
+  color: #475569;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btnDetail:hover {
+  background: #3b82f6;
+  color: white;
+}
+
+/* Status Badges */
+.statusBadge {
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 6px;
+  display: inline-block;
+}
+
+.statusBadge[data-status="working"] {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.statusBadge[data-status="maintenance_active"] {
+  background: #e0f2fe;
+  color: #075985;
+}
+
+.statusBadge[data-status="maintenance"] {
+  background: #f0f9ff;
+  color: #0369a1;
+}
+
+.statusBadge[data-status="onhold"] {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.statusBadge[data-status="dropped"] {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* Modal */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modalContent {
+  background: white;
+  border-radius: 28px;
+  max-width: 700px;
+  width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+}
+
+.modalHeader {
+  padding: 40px 40px 24px 40px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.modalBody {
+  padding: 32px 40px 40px 40px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.btnClose {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  background: #f1f5f9;
+  border: none;
+  font-size: 1.2rem;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  z-index: 10;
+}
+
+.modalTitle {
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: 12px;
+  color: #0f172a;
+}
+
+.modalMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.modalSection {
+  margin-bottom: 32px;
+}
+
+.modalLabel {
+  font-weight: 800;
+  font-size: 0.85rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.modalText {
+  white-space: pre-wrap;
+  color: #334155;
+  line-height: 1.7;
+}
+
+.featureList {
+  margin: 0;
+  padding-left: 1.2rem;
+  color: #334155;
+}
+
+.featureList li {
+  margin-bottom: 8px;
+}
+
+/* Tech Tags */
+.tagList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pillTag {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+/* Links */
+.linkGroup {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.linkButton {
+  padding: 10px 18px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.linkButtonPrimary {
+  background: #3b82f6;
+  color: white;
+}
+
+.linkButtonPrimary:hover {
+  background: #2563eb;
+  transform: translateY(-2px);
+}
+
+.linkButtonSecondary {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.linkButtonSecondary:hover {
+  background: #e2e8f0;
+  transform: translateY(-2px);
 }

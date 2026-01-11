@@ -1,0 +1,217 @@
+.container {
+  min-height: 100vh;
+  background: #f8fafc;
+  padding: 40px 20px;
+}
+
+.passwordWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+}
+
+.passwordCard {
+  background: white;
+  padding: 40px;
+  border-radius: 24px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+  border: 1px solid #e2e8f0;
+}
+
+.iconCircle {
+  width: 64px;
+  height: 64px;
+  background: #fff7ed;
+  color: #f97316;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+  font-size: 24px;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #1e293b;
+  margin-bottom: 12px;
+  letter-spacing: -0.025em;
+}
+
+.description {
+  color: #64748b;
+  font-size: 0.95rem;
+  margin-bottom: 32px;
+  line-height: 1.5;
+}
+
+.inputGroup {
+  margin-bottom: 24px;
+}
+
+.passwordInput {
+  width: 100%;
+  padding: 16px;
+  border-radius: 12px;
+  border: 2px solid #e2e8f0;
+  font-size: 1.25rem;
+  text-align: center;
+  letter-spacing: 0.5em;
+  transition: all 0.2s;
+}
+
+.passwordInput:focus {
+  outline: none;
+  border-color: #f97316;
+  box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.1);
+}
+
+.errorText {
+  color: #ef4444;
+  font-size: 0.875rem;
+  margin-top: 8px;
+  font-weight: 500;
+}
+
+.submitButton {
+  width: 100%;
+  padding: 16px;
+  background: #f97316;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.submitButton:hover {
+  background: #ea580c;
+  transform: translateY(-1px);
+}
+
+.submitButton:active {
+  transform: translateY(0);
+}
+
+/* Content Styles */
+.contentHeader {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.badge {
+  display: inline-block;
+  padding: 6px 16px;
+  background: #fff7ed;
+  color: #f97316;
+  border-radius: 100px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.mainTitle {
+  font-size: 3rem;
+  font-weight: 900;
+  color: #0f172a;
+  letter-spacing: -0.05em;
+  margin-bottom: 16px;
+}
+
+.mainDescription {
+  color: #64748b;
+  font-size: 1.25rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+  margin-bottom: 60px;
+}
+
+.card {
+  background: white;
+  padding: 32px;
+  border-radius: 20px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s;
+}
+
+.card:hover {
+  border-color: #f97316;
+  box-shadow: 0 10px 30px -10px rgba(249, 115, 22, 0.15);
+}
+
+.cardIcon {
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+
+.cardTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 12px;
+}
+
+.cardText {
+  color: #64748b;
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+.section {
+  background: white;
+  border-radius: 24px;
+  padding: 40px;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 40px;
+}
+
+.sectionTitle {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #1e293b;
+  margin-bottom: 24px;
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+}
+
+.listItem {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 16px;
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: 12px;
+}
+
+.listBullet {
+  color: #f97316;
+  font-weight: 900;
+  margin-right: 12px;
+}
+
+.listContent h4 {
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 4px;
+}
+
+.listContent p {
+  color: #64748b;
+  font-size: 0.9rem;
+}
