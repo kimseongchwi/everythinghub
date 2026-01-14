@@ -163,15 +163,15 @@ export default function SalaryCalculator() {
         </p>
       </motion.div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* 입력 섹션 */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.1 }}
-          className={styles.card}
+          className={`${styles.card} flex flex-col h-full`}
         >
-          <div className="space-y-8">
+          <div className="space-y-10 flex-1">
             {/* 급여 및 방식 */}
             <div className="space-y-4">
               <div className="flex justify-between items-center">
@@ -300,7 +300,7 @@ export default function SalaryCalculator() {
         </motion.div>
 
         {/* 결과 섹션 */}
-        <div className="space-y-6">
+        <div className="flex flex-col gap-6 h-full">
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -338,13 +338,13 @@ export default function SalaryCalculator() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className={styles.card}
+            className={`${styles.card} flex-1 flex flex-col`}
           >
             <h3 className="text-gray-400 font-bold text-xs uppercase mb-6 tracking-widest flex items-center gap-2">
               공제 상세 내역
               <Tooltip title="상세 내역" content="월 급여에서 공제되는 법정 부담금 및 세금 항목들입니다." />
             </h3>
-            <div className="space-y-5 min-h-[400px]">
+            <div className="space-y-5 flex-1 flex flex-col justify-between">
               <DeductionRow
                 label="국민연금"
                 rate="4.5%"
@@ -385,7 +385,7 @@ export default function SalaryCalculator() {
                 value={results.localIncomeTax}
               />
 
-              <div className="mt-8 pt-6 border-t-2 border-gray-50 flex justify-between items-center">
+              <div className="mt-auto pt-6 border-t-2 border-gray-50 flex justify-between items-center">
                 <div className="flex flex-col">
                   <span className="font-black text-gray-400 uppercase text-[10px] tracking-widest">Total Deductions</span>
                   <span className="font-bold text-gray-500 text-sm">공제액 합계</span>
