@@ -10,9 +10,12 @@ export async function GET() {
       },
     });
     return NextResponse.json(certs);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to fetch certifications:', error);
-    return NextResponse.json({ error: 'Failed to fetch certifications' }, { status: 500 });
+    return NextResponse.json({
+      error: 'Failed to fetch certifications',
+      details: error.message || 'Unknown error'
+    }, { status: 500 });
   }
 }
 
@@ -22,17 +25,29 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { name, issuer, status, acquireDate } = body;
 
+    // Validate date to prevent Prisma errors
+    let finalDate = null;
+    if (acquireDate && acquireDate.trim() !== "") {
+      const parsedDate = new Date(acquireDate);
+      if (!isNaN(parsedDate.getTime())) {
+        finalDate = parsedDate;
+      }
+    }
+
     const cert = await prisma.certification.create({
       data: {
         name,
         issuer,
         status,
-        acquireDate: acquireDate ? new Date(acquireDate) : null,
+        acquireDate: finalDate,
       },
     });
     return NextResponse.json({ success: true, data: cert });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to add certification:', error);
-    return NextResponse.json({ error: 'Failed to add certification' }, { status: 500 });
+    return NextResponse.json({
+      error: 'Failed to add certification',
+      details: error.message || 'Unknown error'
+    }, { status: 500 });
   }
 }
