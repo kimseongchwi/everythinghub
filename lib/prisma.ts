@@ -1,4 +1,3 @@
-// lib/prisma.ts - Updated to force refresh and ensure adapter is used
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import pg from 'pg';
@@ -6,16 +5,23 @@ import pg from 'pg';
 const prismaClientSingleton = () => {
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString) {
-    throw new Error('DATABASE_URL is not defined');
+    throw new Error('DATABASE_URL environment variable is missing.');
   }
+
+  // Vercel/SaaS Database 전용 SSL 및 풀 설정
   const pool = new pg.Pool({
     connectionString,
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+    max: 20,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 2000,
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : undefined
   });
+
   const adapter = new PrismaPg(pool);
+
   return new PrismaClient({
     adapter,
-    log: ['query', 'info', 'warn', 'error']
+    log: ['query', 'info', 'warn', 'error'],
   });
 };
 

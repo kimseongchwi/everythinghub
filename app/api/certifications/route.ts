@@ -11,10 +11,11 @@ export async function GET() {
     });
     return NextResponse.json(certs);
   } catch (error: any) {
-    console.error('Failed to fetch certifications:', error);
+    console.error('DATABASE ERROR:', error);
     return NextResponse.json({
-      error: 'Failed to fetch certifications',
-      details: error.message || 'Unknown error'
+      error: 'Database connection failed',
+      details: error.message,
+      hint: 'Check if you ran npx prisma db push and verified DATABASE_URL in Vercel settings.'
     }, { status: 500 });
   }
 }
