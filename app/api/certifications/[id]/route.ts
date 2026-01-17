@@ -4,10 +4,10 @@ import prisma from '@/lib/prisma';
 // PATCH /api/certifications/[id]
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params;
+    const { id } = await context.params;
     const body = await request.json();
     const { name, issuer, status, acquireDate } = body;
 
@@ -31,10 +31,10 @@ export async function PATCH(
 // DELETE /api/certifications/[id]
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params;
+    const { id } = await context.params;
     await prisma.certification.delete({
       where: { id },
     });
