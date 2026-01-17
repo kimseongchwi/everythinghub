@@ -282,7 +282,8 @@ const itemVariants: Variants = {
   visible: { y: 0, opacity: 1, transition: { duration: 0.6, ease: "easeOut" } }
 };
 
-export default function PortfolioPage() {
+export default function PortfolioPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = React.use(params);
   const [selectedProject, setSelectedProject] = useState<any>(null);
 
   const openModal = (project: any) => setSelectedProject(project);
