@@ -4,11 +4,22 @@
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
+// prisma/schema.prisma
+
 generator client {
-  provider = "prisma-client"
-  output   = "../lib/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
+}
+
+// 자격증 관리 테이블
+model Certification {
+  id          String    @id @default(uuid())
+  name        String // 자격증 명칭 (예: 정보처리산업기사, 정보처리기사)
+  issuer      String // 발급 기관 (예: 한국산업인력공단)
+  status      String // 상태 (취득완료, 준비중, 응시예정)
+  acquireDate DateTime? // 취득일 (준비 중일 땐 비워둠)
+  createdAt   DateTime  @default(now())
 }
