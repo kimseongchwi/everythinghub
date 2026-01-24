@@ -4,7 +4,6 @@ import Link from 'next/link';
 const projects = [
   { id: 1, slug: 'portfolio', name: '포트폴리오', color: 'bg-blue-500' },
   { id: 2, slug: 'salary-calculator', name: '실수령 계산기', color: 'bg-purple-500' },
-  { id: 3, slug: 'tax-adjustment', name: '우리집 연말정산 방법', color: 'bg-orange-500' },
   // { id: 4, slug: 'ai-image-gen', name: 'AI 이미지 생성기', color: 'bg-emerald-500' },
   // { id: 5, slug: 'memo', name: '메모장', color: 'bg-pink-500' },
   // { id: 6, slug: 'blog', name: '블로그', color: 'bg-indigo-500' },
