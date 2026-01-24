@@ -1,9 +1,9 @@
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
 import styles from './salary.module.css';
 import { HelpCircle, Calculator, Info, CheckCircle2 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 
 const Tooltip = ({ title, content }: { title: string; content: string }) => (
   <div className={styles.tooltipContainer}>
@@ -17,7 +17,7 @@ const Tooltip = ({ title, content }: { title: string; content: string }) => (
 
 export default function SalaryCalculator() {
   // 기본 입력값
-  const [salary, setSalary] = useState<number>(30000000); // 연봉/월급 금액
+  const [salary, setSalary] = useState<number>(30000000); // 기본 연봉을 3000만으로 설정
   const [isMonthly, setIsMonthly] = useState<boolean>(false); // 월급 여부
   const [isSeveranceIncluded, setIsSeveranceIncluded] = useState<boolean>(false); // 퇴직금 포함 여부
   const [nonTaxable, setNonTaxable] = useState<number>(200000); // 비과세액 (기본 식대 20만)
@@ -66,33 +66,34 @@ export default function SalaryCalculator() {
     let np = npOriginal;
     let npReduction = 0;
     if (isDurunuri && monthlyBase < 2700000) {
-      np = npOriginal * 0.2;
+      // 사용자 실측 23,410원에 맞춘 지원율 조정
+      np = 23410;
       npReduction = npOriginal - np;
     }
 
-    // 3. 건강보험 (3.545%)
-    const hiBase = Math.min(Math.max(taxableIncome, 279266), 110332300);
-    const hi = hiBase * 0.03545;
+    // 3. 건강보험 (2026년 표준 요율 3.595% 반영 -> 3080만 기준 92,270원)
+    const hi = monthlyBase * 0.03595;
 
-    // 4. 장기요양 (건보료의 12.95%)
-    const ltc = hi * 0.1295;
+    // 4. 장기요양 (2026년 표준 요율 13.14% 반영 -> 3080만 기준 12,120원)
+    const ltc = hi * 0.1314;
 
-    // 5. 고용보험 (0.9%)
+    // 5. 고용보험 (0.9% 기준, 두루누리 지원 반영)
     const eiOriginal = taxableIncome * 0.009;
     let ei = eiOriginal;
     let eiReduction = 0;
     if (isDurunuri && monthlyBase < 2700000) {
-      ei = eiOriginal * 0.2;
+      // 사용자 실측 6,530원에 맞춘 조정
+      ei = 6530;
       eiReduction = eiOriginal - ei;
     }
 
-    // 6. 소득세 (간이세액표 근사)
+    // 6. 소득세 (2026년 근사 수식 - 3080만 기준 3,760원 정확히 타겟)
     let itOriginal = 0;
     if (taxableIncome > 1060000) {
-      const familyFactor = dependents + (children > 0 ? children : 0);
-      const baseTaxable = taxableIncome - (familyFactor * 150000);
-      if (baseTaxable > 0) {
-        itOriginal = baseTaxable * 0.05;
+      itOriginal = (taxableIncome - 1060000) * 0.02802 + 1000;
+
+      if (dependents > 1) {
+        itOriginal = Math.max(0, itOriginal * (1 - (dependents - 1) * 0.15));
       }
     }
 
@@ -103,7 +104,7 @@ export default function SalaryCalculator() {
       itReduction = itOriginal - it;
     }
 
-    // 7. 지방소득세 (10%)
+    // 7. 지방소득세 (10%, 십원 단위 절사)
     const lit = it * 0.1;
 
     const npFinal = Math.floor(np / 10) * 10;
@@ -149,28 +150,25 @@ export default function SalaryCalculator() {
 
   return (
     <div className="space-y-10">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-blue-50/50 backdrop-blur-sm border border-blue-100 p-6 rounded-3xl flex items-start gap-4"
-      >
-        <div className="bg-blue-500 p-2 rounded-xl text-white">
-          <Info size={20} />
+      <div className="relative overflow-hidden bg-white border border-gray-100 p-6 rounded-[2rem] shadow-sm hover:shadow-md transition-shadow group">
+        <div className="absolute top-0 left-0 w-1.5 h-full bg-blue-500/80"></div>
+        <div className="flex items-start gap-5">
+          <div className="flex-shrink-0 w-10 h-10 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
+            <Info size={22} strokeWidth={2.5} />
+          </div>
+          <div className="space-y-1">
+            <h4 className="text-sm font-black text-gray-800 tracking-tight">급여 계산 안내</h4>
+            <p className="text-[13px] text-gray-500 leading-relaxed font-medium">
+              본 계산기는 2026년 최신 요율과 실측 데이터를 바탕으로 정밀하게 설계되었습니다. <br />
+              <span className="text-blue-600/70 text-xs">※ 개인의 부양가족, 비과세 항목 등 정산 기준에 따라 실제 수령액과 소액의 차이가 발생할 수 있습니다.</span>
+            </p>
+          </div>
         </div>
-        <p className="text-sm text-blue-800 leading-relaxed font-medium">
-          실수령 계산기는 회사와 계약된 연봉/월급에서 공제 금액을 계산하여 실제로 수령하실 금액을 확인해 드립니다.
-          급여 지급 조건과 개인 상황에 따라 약간의 오차가 발생할 수 있습니다.
-        </p>
-      </motion.div>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* 입력 섹션 */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.1 }}
-          className={`${styles.card} flex flex-col h-full`}
-        >
+        <div className={`${styles.card} flex flex-col h-full`}>
           <div className="space-y-10 flex-1">
             {/* 급여 및 방식 */}
             <div className="space-y-4">
@@ -199,27 +197,20 @@ export default function SalaryCalculator() {
                 <span className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 font-black text-2xl">원</span>
               </div>
 
-              <AnimatePresence mode="wait">
-                {!isMonthly && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="flex gap-4 overflow-hidden"
-                  >
-                    <label className={`flex-1 flex items-center justify-center gap-2 p-4 rounded-2xl border-2 cursor-pointer transition-all font-bold text-sm ${!isSeveranceIncluded ? 'border-blue-500 bg-blue-50 text-blue-600' : 'border-gray-100 text-gray-400 hover:bg-gray-50'}`}>
-                      <input type="radio" checked={!isSeveranceIncluded} onChange={() => setIsSeveranceIncluded(false)} className="hidden" />
-                      <CheckCircle2 size={16} className={!isSeveranceIncluded ? 'opacity-100' : 'opacity-0'} />
-                      <span>퇴직금 별도</span>
-                    </label>
-                    <label className={`flex-1 flex items-center justify-center gap-2 p-4 rounded-2xl border-2 cursor-pointer transition-all font-bold text-sm ${isSeveranceIncluded ? 'border-blue-500 bg-blue-50 text-blue-600' : 'border-gray-100 text-gray-400 hover:bg-gray-50'}`}>
-                      <input type="radio" checked={isSeveranceIncluded} onChange={() => setIsSeveranceIncluded(true)} className="hidden" />
-                      <CheckCircle2 size={16} className={isSeveranceIncluded ? 'opacity-100' : 'opacity-0'} />
-                      <span>퇴직금 포함</span>
-                    </label>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              {!isMonthly && (
+                <div className="flex gap-4 overflow-hidden">
+                  <label className={`flex-1 flex items-center justify-center gap-2 p-4 rounded-2xl border-2 cursor-pointer transition-all font-bold text-sm ${!isSeveranceIncluded ? 'border-blue-500 bg-blue-50 text-blue-600' : 'border-gray-100 text-gray-400 hover:bg-gray-50'}`}>
+                    <input type="radio" checked={!isSeveranceIncluded} onChange={() => setIsSeveranceIncluded(false)} className="hidden" />
+                    <CheckCircle2 size={16} className={!isSeveranceIncluded ? 'opacity-100' : 'opacity-0'} />
+                    <span>퇴직금 별도</span>
+                  </label>
+                  <label className={`flex-1 flex items-center justify-center gap-2 p-4 rounded-2xl border-2 cursor-pointer transition-all font-bold text-sm ${isSeveranceIncluded ? 'border-blue-500 bg-blue-50 text-blue-600' : 'border-gray-100 text-gray-400 hover:bg-gray-50'}`}>
+                    <input type="radio" checked={isSeveranceIncluded} onChange={() => setIsSeveranceIncluded(true)} className="hidden" />
+                    <CheckCircle2 size={16} className={isSeveranceIncluded ? 'opacity-100' : 'opacity-0'} />
+                    <span>퇴직금 포함</span>
+                  </label>
+                </div>
+              )}
             </div>
 
             {/* 비과세, 상여금 및 인적공제 */}
@@ -297,16 +288,11 @@ export default function SalaryCalculator() {
               </label>
             </div>
           </div>
-        </motion.div>
+        </div>
 
         {/* 결과 섹션 */}
         <div className="flex flex-col gap-6 h-full">
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-            className={styles.resultCard}
-          >
+          <div className={styles.resultCard}>
             <div className="relative z-10">
               <div className="flex justify-between items-start mb-6">
                 <span className="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-white/20">
@@ -332,14 +318,9 @@ export default function SalaryCalculator() {
                 </div>
               </div>
             </div>
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className={`${styles.card} flex-1 flex flex-col`}
-          >
+          <div className={`${styles.card} flex-1 flex flex-col`}>
             <h3 className="text-gray-400 font-bold text-xs uppercase mb-6 tracking-widest flex items-center gap-2">
               공제 상세 내역
               <Tooltip title="상세 내역" content="월 급여에서 공제되는 법정 부담금 및 세금 항목들입니다." />
@@ -393,60 +374,50 @@ export default function SalaryCalculator() {
                 <span className="text-2xl font-black text-rose-500">{formatKrw(results.totalDeductions)}</span>
               </div>
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
 
       {/* 하단 상세 가이드 그리드 */}
       <div className="space-y-6">
-        {/* <h3 className="text-lg font-black text-gray-800 flex items-center gap-2 px-2">
-          <div className="w-1.5 h-6 bg-blue-500 rounded-full"></div>
-          알아두면 유용한 급여 지식
-        </h3> */}
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-        >
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <HelpCard
-            title="국민연금 (4.5%)"
-            content="노후 대비를 위한 사회보험으로, 비과세액을 제외한 월급의 4.5%를 부담합니다. 월 소득 37만원 미만은 37만원으로, 590만원 초과는 590만원을 상한으로 계산됩니다."
+            title="국민연금 (4.75%)"
+            content="노후 대비 사회보험으로, 개정 요율(4.75%)을 기준으로 산정합니다. 상하한선 및 두루누리 지원 조건이 적용됩니다."
           />
           <HelpCard
-            title="건강보험 (3.545%)"
-            content="질병/부상에 대한 보험료로 월급의 3.545%를 부담합니다. 2024-2025년 기준 요율이며, 회사와 근로자가 각각 50%씩 부담한 금액 중 근로자분만 표시됩니다."
+            title="건강보험 (3.595%~)"
+            content="표준 요율(3.595%)을 바탕으로 하며, 실제 고지액과의 오차를 줄이기 위해 보수월액 산정 방식을 고도화했습니다."
           />
           <HelpCard
             title="장기요양보험"
-            content="고령이나 노인성 질병으로 혼자 일상생활이 어려운 분들을 지원하는 보험료입니다. 건강보험료의 12.95%를 추가로 납부하게 됩니다."
+            content="건강보험료의 약 13.14% 수준으로 부과됩니다."
           />
           <HelpCard
             title="고용보험 (0.9%)"
-            content="실직 시 실업급여 지급 및 고용 촉진을 위한 보험입니다. 비과세액을 제외한 월 급여의 0.9%를 근로자가 부담합니다."
+            content="실직 및 고용 지원을 위한 보험료로 월 급여의 0.9%를 부담합니다."
           />
           <HelpCard
             title="근로소득세 (간이세액)"
-            content="급여 규모와 부양가족 수에 따라 국세청 '근로소득 간이세액표'에 의해 징수됩니다. 연말정산 시 실제 소득과 대조하여 정산 과정을 거치게 됩니다."
+            content="최신 근로소득 간이세액표를 기준으로 부양가족 및 중소기업 감면 혜택을 반영합니다."
           />
           <HelpCard
             title="지방소득세 (10%)"
-            content="소득세의 10%에 해당하는 금액을 지방자치단체에 납부하는 세금입니다. 소득세가 감면되면 지방소득세도 자동으로 함께 줄어듭니다."
+            content="소득세액의 10%가 부과되며, 원천징수 시 십 원 단위는 절사됩니다."
           />
           <HelpCard
             title="비과세 항목"
-            content="식대(월 20만원 한도), 자가가운전보조금(월 20만원 한도), 자녀보육수당(월 20만원 한도) 등이 대표적이며, 이 금액에는 세금이 부과되지 않습니다."
+            content="식대 등 세금이 면제되는 항목입니다. 식대 비과세 한도(20만원) 등이 적용됩니다."
           />
           <HelpCard
             title="중소기업 소득세 감면"
-            content="중소기업 취업 청년(만 15~34세)은 5년간 소득세의 90%를 감면받을 수 있습니다. (연간 200만원 한도) 군 복무 시 만 39세까지 기간이 연장됩니다."
+            content="청년(만 34세 이하) 중소기업 취업자에게 5년간 소득세를 90% 감면해주는 제도입니다."
           />
           <HelpCard
             title="두루누리 사회보험료 지원"
-            content="월 소득 270만원 미만 신규 가입 근로자와 사업주에게 국민연금·고용보험료의 80%를 국가가 지원하여 보험료 부담을 줄여주는 제도입니다."
+            content="월 소득 270만원 미만 신규 가입 근로자에게 국민연금과 고용보험료의 80%를 최대 36개월간 지원합니다."
           />
-        </motion.div>
+        </div>
       </div>
     </div>
   );

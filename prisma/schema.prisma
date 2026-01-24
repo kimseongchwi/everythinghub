@@ -23,3 +23,13 @@ model Certification {
   acquireDate DateTime? // 취득일 (준비 중일 땐 비워둠)
   createdAt   DateTime  @default(now())
 }
+
+// 파일 관리 테이블 (Vercel Blob 연동)
+model Media {
+  id        String   @id @default(uuid())
+  filename  String
+  url       String
+  size      Int
+  mimeType  String
+  createdAt DateTime @default(now())
+}
