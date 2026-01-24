@@ -27,8 +27,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Filename and body required' }, { status: 400 });
     }
 
+    // 환경별 폴더 분기 (dev/prod)
+    const isProd = process.env.NODE_ENV === 'production';
+    const folder = isProd ? 'prod' : 'dev';
+    const blobPath = `${folder}/${filename}`;
+
     // Vercel Blob에 업로드
-    const blob = await put(filename, request.body, {
+    const blob = await put(blobPath, request.body, {
       access: 'public',
     });
 
