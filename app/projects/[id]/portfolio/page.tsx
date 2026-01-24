@@ -7,11 +7,17 @@ export default async function PortfolioPage({ params }: { params: Promise<{ id: 
   const { id } = await params;
 
   // DB에서 데이터 미리 가져오기 (Server-side Fetching)
-  const certifications = await prisma.certification.findMany({
-    orderBy: {
-      acquireDate: 'desc',
-    },
-  });
+  let certifications: any[] = [];
+  try {
+    certifications = await prisma.certification.findMany({
+      orderBy: {
+        acquireDate: 'desc',
+      },
+    });
+  } catch (error) {
+    console.error('Failed to load certifications:', error);
+    // Fallback to empty array if DB is not ready
+  }
 
   return (
     <PortfolioClient
