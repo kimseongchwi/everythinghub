@@ -50,8 +50,14 @@ export default function RootLayout({
             <Link href="/" className="text-xl font-black tracking-tighter text-blue-600">
               EVERYTHING HUB
             </Link>
-            <nav className="flex gap-8 text-sm font-bold text-gray-500">
+            <nav className="flex gap-8 text-sm font-bold text-gray-500 items-center">
               <Link href="/" className="hover:text-blue-600 transition-colors">Home</Link>
+              {process.env.NODE_ENV === 'development' && (
+                <Link href="/admin" className="px-3 py-1.5 bg-gray-100 rounded-lg text-gray-900 hover:bg-gray-200 transition-all flex items-center gap-1.5">
+                  <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
+                  Admin
+                </Link>
+              )}
             </nav>
           </div>
         </header>

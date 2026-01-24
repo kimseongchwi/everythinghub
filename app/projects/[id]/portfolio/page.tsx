@@ -2,12 +2,10 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import styles from './portfolio.module.css';
-import { motion, AnimatePresence, Variants } from 'framer-motion';
-
 import { ProjectModal, StatusBadge } from './ProjectModal';
 
 const portfolioData = {
-  name: "김세웅", // User might want to change this later
+  name: "김세웅",
   role: "풀스택 개발자 (Full-Stack Developer)",
   email: "seongchwi@example.com",
   phone: "010-XXXX-XXXX",
@@ -52,7 +50,7 @@ const portfolioData = {
       icon: (
         <svg width="18" height="18" viewBox="0 0 256 256" fill="none">
           <path d="M128 0C57.31 0 0 57.31 0 128s57.31 128 128 128 128-57.31 128-128S198.69 0 128 0zm0 215c-48.05 0-87-38.95-87-87s38.95-87 87-87 87 38.95 87 87-38.95 87-87 87z" fill="#00758F" />
-          <path d="M128 57c-39.21 0-71 31.79-71 71s31.79 71 71 71 71-31.79 71-71-31.79-71-71-71zm0 115c-24.26 0-44-19.74-44-44s19.74-44 44-44 44 19.74 44 44-19.74 44-44 44z" fill="#F29111" />
+          <path d="M128 57c-39.21 0-71 31.79-71 71s31.79 71 71 71 71-31.79 71-71-31.79-71-71-31.79-71-71z" fill="#F29111" />
         </svg>
       )
     },
@@ -80,7 +78,7 @@ const portfolioData = {
           <path d="M0 47.7963C0 45.2 1.0272 42.7094 2.85558 40.8716C4.68396 39.0338 7.16369 38 9.7491 38H19.4982V47.7963C19.4982 50.3926 18.471 52.8831 16.6426 54.721C14.8142 56.5588 12.3345 57.5926 9.7491 57.5926C7.16369 57.5926 4.68396 56.5588 2.85558 54.721C1.0272 52.8831 0 50.3926 0 47.7963Z" fill="#0AC17E" />
           <path d="M0 28.5C0 25.9037 1.0272 23.4131 2.85558 21.5753C4.68396 19.7375 7.16369 18.7037 9.7491 18.7037H19.4982V38.2963H9.7491C7.16369 38.2963 4.68396 37.2625 2.85558 35.4247C1.0272 33.5869 0 31.0963 0 28.5Z" fill="#A259FF" />
           <path d="M0 9.2963C0 6.7 1.0272 4.20945 2.85558 2.37162C4.68396 0.533782 7.16369 -0.5 9.7491 -0.5H19.4982V19H9.7491C7.16369 19 4.68396 17.9662 2.85558 16.1284C1.0272 14.2905 0 11.7999 0 9.2963Z" fill="#F24E1E" />
-          <path d="M19.4982 -0.5H29.2473C31.8327 -0.5 34.3125 0.533782 36.1408 2.37162C37.9692 4.20945 38.9964 6.7 38.9964 9.2963C38.9964 11.7999 37.9692 14.2905 36.1408 16.1284C34.3125 17.9662 31.8327 19 29.2473 19H19.4982V-0.5Z" fill="#FF7262" />
+          <path d="M19.4982 -0.5H29.2473C31.8327 -0.5 34.3125 0.533782 36.1408 2.37162C37.9692 4.20945 38.9964 6.7 38.9964 9.2963C38.9964 11.7999 37.9692 14.2905 36.1408 16.1284C34.3125 17.9662 31.8327 19H29.2473C31.8327 19 34.3125 17.9662 36.1408 16.1284C37.9692 14.2905 38.9964 11.7999 38.9964 9.2963Z" fill="#FF7262" />
         </svg>
       )
     },
@@ -216,11 +214,11 @@ const portfolioData = {
   ]
 };
 
-const SkillItem = ({ skill, variants }: { skill: any, variants: any }) => {
+const SkillItem = ({ skill }: { skill: any }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <motion.div className={styles.skillItem} variants={variants}>
+    <div className={styles.skillItem}>
       <div
         className={styles.skillMain}
         onClick={() => setIsOpen(!isOpen)}
@@ -230,69 +228,41 @@ const SkillItem = ({ skill, variants }: { skill: any, variants: any }) => {
           <div className={styles.skillNameGroup}>
             {skill.icon}
             <span className={styles.skillName}>{skill.name}</span>
-            <motion.span
-              animate={{ rotate: isOpen ? 180 : 0 }}
+            <span
+              style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s' }}
               className={styles.chevronIcon}
             >
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
                 <path d="M2 4L6 8L10 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-            </motion.span>
+            </span>
           </div>
           <span className={styles.skillGrade}>{skill.level}</span>
         </div>
         <div className={styles.gaugeContainer}>
-          <motion.div
+          <div
             className={styles.gaugeFill}
-            initial={{ width: 0 }}
-            whileInView={{ width: `${skill.percent}%` }}
-            transition={{ duration: 1, ease: "easeOut" }}
-            viewport={{ once: true }}
+            style={{ width: `${skill.percent}%` }}
           />
         </div>
       </div>
 
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-            className={styles.skillDescWrap}
-          >
-            <p className={styles.skillDescText}>{skill.desc}</p>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
+      {isOpen && (
+        <div className={styles.skillDescWrap}>
+          <p className={styles.skillDescText}>{skill.desc}</p>
+        </div>
+      )}
+    </div>
   );
-};
-
-const containerVariants: Variants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1, delayChildren: 0.3 }
-  }
-};
-
-const itemVariants: Variants = {
-  hidden: { y: 20, opacity: 0 },
-  visible: { y: 0, opacity: 1, transition: { duration: 0.6, ease: "easeOut" } }
 };
 
 export default function PortfolioPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = React.use(params);
   const [selectedProject, setSelectedProject] = useState<any>(null);
+  const [certs, setCerts] = useState<any[]>([]);
 
   const openModal = (project: any) => setSelectedProject(project);
   const closeModal = () => setSelectedProject(null);
-
-  const [certs, setCerts] = useState<any[]>([]);
-  const [isAddingCert, setIsAddingCert] = useState(false);
-  const [editingCertId, setEditingCertId] = useState<string | null>(null);
-  const [isUnknownDate, setIsUnknownDate] = useState(false);
 
   useEffect(() => {
     fetchCerts();
@@ -304,49 +274,6 @@ export default function PortfolioPage({ params }: { params: Promise<{ id: string
       const data = await res.json();
       setCerts(data);
     }
-  };
-
-  const handleAddCert = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const form = e.currentTarget;
-    const formData = new FormData(form);
-    const body = {
-      name: formData.get('name'),
-      issuer: formData.get('issuer'),
-      status: formData.get('status'),
-      acquireDate: isUnknownDate ? null : formData.get('acquireDate'),
-    };
-
-    const url = editingCertId
-      ? `/api/certifications/${editingCertId}`
-      : '/api/certifications';
-
-    const method = editingCertId ? 'PATCH' : 'POST';
-
-    const res = await fetch(url, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-
-    if (res.ok) {
-      setIsAddingCert(false);
-      setEditingCertId(null);
-      setIsUnknownDate(false);
-      fetchCerts();
-    }
-  };
-
-  const handleDeleteCert = async (id: string) => {
-    if (!confirm('정말로 삭제하시겠습니까?')) return;
-    const res = await fetch(`/api/certifications/${id}`, { method: 'DELETE' });
-    if (res.ok) fetchCerts();
-  };
-
-  const startEditCert = (cert: any) => {
-    setIsAddingCert(true);
-    setEditingCertId(cert.id);
-    setIsUnknownDate(!cert.acquireDate);
   };
 
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -361,75 +288,34 @@ export default function PortfolioPage({ params }: { params: Promise<{ id: string
 
   return (
     <div className={styles.portfolioContainer}>
-
-      {/* 1. Header with Motion */}
-      <motion.header
-        className={styles.header}
-        initial={{ y: -50, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.8 }}
-      >
-        <motion.div
-          className={styles.profileTag}
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: 0.5, type: "spring" }}
-        >
-          Available for New Tech
-        </motion.div>
+      <header className={styles.header}>
+        <div className={styles.profileTag}>Available for New Tech</div>
         <h1 className={styles.title}>{portfolioData.name}</h1>
         <p className={styles.subtitle}>{portfolioData.role}</p>
-
-        <motion.p
-          className={styles.description}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1 }}
-        >
-          {portfolioData.description}
-        </motion.p>
-
+        <p className={styles.description}>{portfolioData.description}</p>
         <div className={styles.contactInfo}>
           <span>{portfolioData.email}</span>
           <span className={styles.divider}>|</span>
           <span>{portfolioData.phone}</span>
         </div>
-      </motion.header>
+      </header>
 
-      {/* 1.5 Professional Summary */}
-      <motion.section
-        className={styles.sectionWrapperSmall}
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ delay: 0.2 }}
-      >
+      <section className={styles.sectionWrapperSmall}>
         <div className={styles.summaryCard}>
           <h2 className={styles.summaryTitle}>About Me</h2>
-          <p className={styles.summaryText}>
-            {portfolioData.description}
-          </p>
+          <p className={styles.summaryText}>{portfolioData.description}</p>
         </div>
-      </motion.section>
+      </section>
 
-      {/* 2. Skills & Info Section */}
-      <motion.section
-        className={styles.sectionWrapper}
-        variants={containerVariants}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-      >
+      <section className={styles.sectionWrapper}>
         <div className={styles.infoGrid}>
-          {/* Skill Gauges */}
-          <motion.div className={styles.infoCard} variants={itemVariants}>
+          <div className={styles.infoCard}>
             <h2 className={styles.sectionTitle}>Technical Skills</h2>
             <div className={styles.skillList}>
               {portfolioData.skills.map((skill, i) => (
-                <SkillItem key={i} skill={skill} variants={itemVariants} />
+                <SkillItem key={i} skill={skill} />
               ))}
             </div>
-
             <div className={styles.toolGroups}>
               <div className={styles.toolSubGroup}>
                 <h3 className={styles.subTitle}>Design & Collab</h3>
@@ -454,10 +340,9 @@ export default function PortfolioPage({ params }: { params: Promise<{ id: string
                 </div>
               </div>
             </div>
-          </motion.div>
+          </div>
 
-          {/* Education & Certs */}
-          <motion.div className={styles.infoCard} variants={itemVariants}>
+          <div className={styles.infoCard}>
             <h2 className={styles.sectionTitle}>Edu & Credentials</h2>
             <div className={styles.eduSection}>
               {portfolioData.education.map((edu, i) => (
@@ -473,20 +358,6 @@ export default function PortfolioPage({ params }: { params: Promise<{ id: string
                   <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
                     <span className={styles.certName}>{cert.name}</span>
                     <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{cert.issuer} ({cert.status})</span>
-                    <div className={styles.certItemActions}>
-                      <button className={`${styles.actionBtn} ${styles.editBtn}`} onClick={() => startEditCert(cert)}>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                        </svg>
-                      </button>
-                      <button className={`${styles.actionBtn} ${styles.deleteBtn}`} onClick={() => handleDeleteCert(cert.id)}>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <polyline points="3 6 5 6 21 6" />
-                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                        </svg>
-                      </button>
-                    </div>
                   </div>
                   <span className={styles.certDate}>
                     {cert.acquireDate ? (() => {
@@ -496,134 +367,14 @@ export default function PortfolioPage({ params }: { params: Promise<{ id: string
                   </span>
                 </div>
               )) : (
-                <div className={styles.emptyCerts}>
-                  등록된 자격증이 없습니다.
-                </div>
+                <div className={styles.emptyCerts}>등록된 자격증이 없습니다.</div>
               )}
             </div>
-
-            <AnimatePresence>
-              {isAddingCert ? (
-                <motion.form
-                  className={styles.certForm}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  onSubmit={handleAddCert}
-                >
-                  <div className={styles.inputGroup}>
-                    <label className={styles.inputLabel}>자격증 명칭</label>
-                    <input
-                      className={styles.certInput}
-                      name="name"
-                      placeholder="예: 정보처리산업기사"
-                      defaultValue={editingCertId ? certs.find(c => c.id === editingCertId)?.name : ''}
-                      required
-                    />
-                  </div>
-                  <div className={styles.inputGroup}>
-                    <label className={styles.inputLabel}>발급 기관</label>
-                    <input
-                      className={styles.certInput}
-                      name="issuer"
-                      placeholder="예: 한국산업인력공단"
-                      defaultValue={editingCertId ? certs.find(c => c.id === editingCertId)?.issuer : ''}
-                      required
-                    />
-                  </div>
-                  <div className={styles.formRow}>
-                    <div className={styles.inputGroup} style={{ flex: 1 }}>
-                      <div className={styles.labelRow}>
-                        <label className={styles.inputLabel}>상태</label>
-                      </div>
-                      <select
-                        className={styles.certInput}
-                        name="status"
-                        defaultValue={editingCertId ? certs.find(c => c.id === editingCertId)?.status : '취득완료'}
-                      >
-                        <option value="취득완료">취득완료</option>
-                        <option value="준비중">준비중</option>
-                        <option value="응시예정">응시예정</option>
-                      </select>
-                    </div>
-                    <div className={styles.inputGroup} style={{ flex: 1 }}>
-                      <div className={styles.labelRowWithCheckbox}>
-                        <label className={styles.inputLabel}>취득 일자</label>
-                        <label className={styles.checkboxGroup}>
-                          <input
-                            type="checkbox"
-                            className={styles.checkboxInput}
-                            checked={isUnknownDate}
-                            onChange={(e) => setIsUnknownDate(e.target.checked)}
-                          />
-                          <div className={styles.customCheckbox}>
-                            <svg className={styles.checkIcon} width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4">
-                              <polyline points="20 6 9 17 4 12" />
-                            </svg>
-                          </div>
-                          <span className={styles.checkboxLabel}>모름/준비중</span>
-                        </label>
-                      </div>
-                      <div className={styles.datePickerContainer}>
-                        <input
-                          type="date"
-                          className={styles.certInput}
-                          name="acquireDate"
-                          disabled={isUnknownDate}
-                          defaultValue={editingCertId && certs.find(c => c.id === editingCertId)?.acquireDate ? new Date(certs.find(c => c.id === editingCertId).acquireDate).toISOString().split('T')[0] : ''}
-                          required={!isUnknownDate}
-                          onClick={(e) => {
-                            if (!isUnknownDate) {
-                              try {
-                                (e.currentTarget as any).showPicker();
-                              } catch (err) {
-                                // Fallback for browsers that don't support showPicker()
-                              }
-                            }
-                          }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  <div className={styles.certFormActions}>
-                    <button type="submit" className={styles.certSubmitBtn}>
-                      {editingCertId ? '수정 완료' : '저장'}
-                    </button>
-                    <button
-                      type="button"
-                      className={styles.certCancelBtn}
-                      onClick={() => {
-                        setIsAddingCert(false);
-                        setEditingCertId(null);
-                        setIsUnknownDate(false);
-                      }}
-                    >
-                      취소
-                    </button>
-                  </div>
-                </motion.form>
-              ) : (
-                <button className={styles.certAddBtn} onClick={() => setIsAddingCert(true)}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                  </svg>
-                  자격증 추가하기
-                </button>
-              )}
-            </AnimatePresence>
-          </motion.div>
+          </div>
         </div>
-      </motion.section>
+      </section>
 
-      {/* 3. Personal Projects - Horizontal Scroll */}
-      <motion.section
-        className={styles.sectionWrapper}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-        variants={containerVariants}
-      >
+      <section className={styles.sectionWrapper}>
         <div className={styles.sectionHeaderProjects}>
           <div className={styles.headerInfo}>
             <h2 className={styles.sectionTitle}>개인 프로젝트</h2>
@@ -644,11 +395,7 @@ export default function PortfolioPage({ params }: { params: Promise<{ id: string
         </div>
         <div className={styles.horizontalScroll} ref={scrollRef}>
           {portfolioData.personalProjects.map((project) => (
-            <motion.div
-              key={project.id}
-              className={styles.scrollCard}
-              variants={itemVariants}
-            >
+            <div key={project.id} className={styles.scrollCard}>
               <StatusBadge statusKey={project.status} />
               <h3 className={styles.cardTitle}>{project.title}</h3>
               <p className={styles.cardDuration}>{project.duration}</p>
@@ -658,84 +405,55 @@ export default function PortfolioPage({ params }: { params: Promise<{ id: string
                   <span key={i} className={styles.pillTagSmall}>{t}</span>
                 ))}
               </div>
-              <button className={styles.btnDetail} onClick={() => openModal(project)}>
-                상세 정보 보기
-              </button>
-            </motion.div>
+              <button className={styles.btnDetail} onClick={() => openModal(project)}>상세 정보 보기</button>
+            </div>
           ))}
         </div>
-      </motion.section>
+      </section>
 
-      {/* 4. Company Experience */}
-      <motion.section
-        className={styles.sectionWrapper}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-        variants={containerVariants}
-      >
+      <section className={styles.sectionWrapper}>
         <div className={styles.sectionHeader}>
           <h2 className={styles.sectionTitle}>실무 경력</h2>
         </div>
-
-        {
-          portfolioData.workExperience.map((work, idx) => (
-            <div key={idx} className={styles.experienceItem}>
-              {/* Left Side: Company Info */}
-              <motion.div className={styles.companySide} variants={itemVariants}>
-                <div className={styles.companyName}>{work.company}</div>
-                <div className={styles.companyGroup}>
-                  <div className={styles.workRole}>{work.role}</div>
-                  <div className={styles.workPeriod}>{work.period}</div>
-                </div>
-              </motion.div>
-
-              {/* Right Side: Projects Grid */}
-              <div className={styles.workProjectGrid}>
-                {work.projects.map((p) => (
-                  <motion.div
-                    key={p.id}
-                    className={styles.workProjectCard}
-                    variants={itemVariants}
-                  >
-                    <StatusBadge statusKey={p.status} />
-                    <h4 className={styles.projTitle}>{p.title}</h4>
-                    <p className={styles.projDuration}>{p.duration}</p>
-                    <p className={styles.projDesc}>{p.description}</p>
-                    <div className={styles.tagList}>
-                      {p.techStack.map((t, i) => (
-                        <span key={i} className={styles.pillTagSmall}>{t}</span>
-                      ))}
-                    </div>
-                    <button className={styles.btnDetailSimple} onClick={() => openModal(p)}>
-                      상세보기
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M9 18l6-6-6-6" />
-                      </svg>
-                    </button>
-                  </motion.div>
-                ))}
+        {portfolioData.workExperience.map((work, idx) => (
+          <div key={idx} className={styles.experienceItem}>
+            <div className={styles.companySide}>
+              <div className={styles.companyName}>{work.company}</div>
+              <div className={styles.companyGroup}>
+                <div className={styles.workRole}>{work.role}</div>
+                <div className={styles.workPeriod}>{work.period}</div>
               </div>
             </div>
-          ))
-        }
-      </motion.section>
+            <div className={styles.workProjectGrid}>
+              {work.projects.map((p) => (
+                <div key={p.id} className={styles.workProjectCard}>
+                  <StatusBadge statusKey={p.status} />
+                  <h4 className={styles.projTitle}>{p.title}</h4>
+                  <p className={styles.projDuration}>{p.duration}</p>
+                  <p className={styles.projDesc}>{p.description}</p>
+                  <div className={styles.tagList}>
+                    {p.techStack.map((t, i) => (
+                      <span key={i} className={styles.pillTagSmall}>{t}</span>
+                    ))}
+                  </div>
+                  <button className={styles.btnDetailSimple} onClick={() => openModal(p)}>
+                    상세보기
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M9 18l6-6-6-6" />
+                    </svg>
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </section>
 
-      {/* Footer */}
       <footer className={styles.footer}>
         &copy; 2026 {portfolioData.name}. All rights reserved.
       </footer>
 
-      {/* Modal - Unchanged but ensure mapping works */}
-      <AnimatePresence>
-        {selectedProject && (
-          <ProjectModal
-            project={selectedProject}
-            onClose={closeModal}
-          />
-        )}
-      </AnimatePresence>
-
+      {selectedProject && <ProjectModal project={selectedProject} onClose={closeModal} />}
     </div>
   );
 }
