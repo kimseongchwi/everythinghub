@@ -8,8 +8,13 @@ export async function GET() {
       orderBy: { createdAt: 'desc' },
     });
     return NextResponse.json(media);
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch media' }, { status: 500 });
+  } catch (error: any) {
+    console.error('FETCH MEDIA ERROR:', error);
+    return NextResponse.json({
+      error: 'Failed to fetch media',
+      details: error.message,
+      hint: 'Did you run npx prisma db push for the production database?'
+    }, { status: 500 });
   }
 }
 
