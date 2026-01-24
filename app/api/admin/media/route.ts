@@ -35,6 +35,7 @@ export async function POST(request: Request) {
     // Vercel Blob에 업로드
     const blob = await put(blobPath, request.body, {
       access: 'public',
+      addRandomSuffix: true,
     });
 
     // DB에 기록
