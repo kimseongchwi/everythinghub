@@ -10,11 +10,12 @@ export async function GET() {
       },
     });
     return NextResponse.json(certs);
-  } catch (error: any) {
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown database error';
     console.error('DATABASE ERROR:', error);
     return NextResponse.json({
       error: 'Database connection failed',
-      details: error.message
+      details: errorMessage
     }, { status: 500 });
   }
 }
