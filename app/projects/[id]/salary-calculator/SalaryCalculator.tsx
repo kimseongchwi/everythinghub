@@ -46,6 +46,7 @@ export default function SalaryCalculator() {
     npOriginal: 0,
     eiOriginal: 0,
     itOriginal: 0,
+    monthlyBonus: 0,
   });
 
   useEffect(() => {
@@ -54,10 +55,10 @@ export default function SalaryCalculator() {
     if (isMonthly) {
       monthlyBase = salary;
     } else {
-      monthlyBase = Math.round(isSeveranceIncluded ? salary / 13 : salary / 12);
+      monthlyBase = Math.floor(isSeveranceIncluded ? salary / 13 : salary / 12);
     }
 
-    const monthlyBonus = Math.round(bonus / 12);
+    const monthlyBonus = Math.floor(bonus / 12);
     const taxableIncome = Math.max(0, monthlyBase - nonTaxable);
 
     // 2. 국민연금 (4.5%)
@@ -134,6 +135,7 @@ export default function SalaryCalculator() {
       npOriginal: Math.floor(npOriginal / 10) * 10,
       eiOriginal: Math.floor(eiOriginal / 10) * 10,
       itOriginal: Math.floor(itOriginal / 10) * 10,
+      monthlyBonus,
     });
   }, [salary, isMonthly, isSeveranceIncluded, nonTaxable, dependents, children, isSmeTaxReduction, isDurunuri, bonus]);
 
@@ -309,7 +311,7 @@ export default function SalaryCalculator() {
                 {bonus > 0 && (
                   <div className="flex justify-between text-xs">
                     <span className="text-blue-200">월 상여금 (평균)</span>
-                    <span className="font-bold">+{formatKrw(Math.round(bonus / 12))}</span>
+                    <span className="font-bold">+{formatKrw(results.monthlyBonus)}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-xs">
