@@ -61,9 +61,9 @@ export default function SalaryCalculator() {
     const monthlyBonus = Math.floor(bonus / 12);
     const taxableIncome = Math.max(0, monthlyBase - nonTaxable);
 
-    // 2. 국민연금 (4.5%)
+    // 2. 국민연금 (4.75%)
     const npBase = Math.min(Math.max(taxableIncome, 370000), 5900000);
-    const npOriginal = npBase * 0.045;
+    const npOriginal = npBase * 0.0475;
     let np = npOriginal;
     let npReduction = 0;
     if (isDurunuri && monthlyBase < 2700000) {
@@ -330,7 +330,7 @@ export default function SalaryCalculator() {
             <div className="space-y-5 flex-1 flex flex-col justify-between">
               <DeductionRow
                 label="국민연금"
-                rate="4.5%"
+                rate="4.75%"
                 value={results.nationalPension}
                 original={results.npOriginal}
                 reduction={results.npReduction}
@@ -338,12 +338,12 @@ export default function SalaryCalculator() {
               />
               <DeductionRow
                 label="건강보험"
-                rate="3.545%"
+                rate="3.595%"
                 value={results.healthInsurance}
               />
               <DeductionRow
                 label="장기요양"
-                rate="12.95%"
+                rate="13.14%"
                 value={results.longTermCare}
               />
               <DeductionRow
