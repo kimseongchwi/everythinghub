@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import styles from './admin.module.css';
+import CustomDatePicker from '@/components/CustomDatePicker';
 
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState('portfolio');
@@ -178,12 +179,6 @@ export default function AdminPage() {
           >
             미디어/파일 관리
           </button>
-          <button
-            className={`${styles.navItem} ${activeTab === 'salary' ? styles.active : ''}`}
-            onClick={() => setActiveTab('salary')}
-          >
-            연봉계산기 설정
-          </button>
         </nav>
         <button onClick={handleLogout} className={styles.sidebarLogoutBtn}>로그아웃</button>
       </aside>
@@ -193,7 +188,6 @@ export default function AdminPage() {
           <h1>
             {activeTab === 'portfolio' && 'Portfolio Management'}
             {activeTab === 'media' && 'Media & Assets'}
-            {activeTab === 'salary' && 'Salary Calculator Settings'}
           </h1>
           <div className={styles.userBadge}>Admin User</div>
         </header>
@@ -218,7 +212,12 @@ export default function AdminPage() {
                     <button onClick={() => {
                       setIsAddingCert(true);
                       setEditingCertId(cert.id);
-                      setFormData({ name: cert.name, issuer: cert.issuer, status: cert.status, acquireDate: cert.acquireDate ? new Date(cert.acquireDate).toISOString().split('T')[0] : '' });
+                      setFormData({
+                        name: cert.name,
+                        issuer: cert.issuer,
+                        status: cert.status,
+                        acquireDate: cert.acquireDate ? new Date(cert.acquireDate).toISOString().split('T')[0] : ''
+                      });
                     }} className={styles.editBtn}>수정</button>
                     <button onClick={() => handleCertDelete(cert.id)} className={styles.deleteBtn}>삭제</button>
                   </div>
@@ -270,22 +269,40 @@ export default function AdminPage() {
           </section>
         )}
 
-        {activeTab === 'salary' && (
-          <div className={styles.emptyContent}>준비 중입니다.</div>
-        )}
-
         {isAddingCert && (
           <div className={styles.modalOverlay}>
             <div className={styles.modal}>
               <h2>자격증 관리</h2>
               <form onSubmit={handleCertSubmit} className={styles.form}>
-                <input placeholder="명칭" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} required className={styles.input} />
-                <input placeholder="기관" value={formData.issuer} onChange={e => setFormData({ ...formData, issuer: e.target.value })} required className={styles.input} />
-                <select value={formData.status} onChange={e => setFormData({ ...formData, status: e.target.value })} className={styles.input}>
+                <input
+                  placeholder="명칭"
+                  value={formData.name}
+                  onChange={e => setFormData({ ...formData, name: e.target.value })}
+                  required
+                  className={styles.input}
+                />
+                <input
+                  placeholder="기관"
+                  value={formData.issuer}
+                  onChange={e => setFormData({ ...formData, issuer: e.target.value })}
+                  required
+                  className={styles.input}
+                />
+                <select
+                  value={formData.status}
+                  onChange={e => setFormData({ ...formData, status: e.target.value })}
+                  className={styles.input}
+                >
                   <option value="취득완료">취득완료</option>
                   <option value="준비중">준비중</option>
                 </select>
-                <input type="date" value={formData.acquireDate} onChange={e => setFormData({ ...formData, acquireDate: e.target.value })} className={styles.input} />
+
+                <CustomDatePicker
+                  value={formData.acquireDate}
+                  onChange={(val: string) => setFormData({ ...formData, acquireDate: val })}
+                  label="취득일"
+                />
+
                 <div className={styles.modalActions}>
                   <button type="submit" className={styles.submitBtn}>저장</button>
                   <button type="button" onClick={() => setIsAddingCert(false)} className={styles.cancelBtn}>취소</button>

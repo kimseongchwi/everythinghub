@@ -14,8 +14,10 @@ const prismaClientSingleton = () => {
     connectionString,
     max: 20,
     idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 2000,
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : undefined
+    connectionTimeoutMillis: 10000, // 타임아웃을 10초로 늘려 Cold Start 대응
+    ssl: connectionString.includes('localhost') || connectionString.includes('127.0.0.1')
+      ? undefined
+      : { rejectUnauthorized: false }
   });
 
   const adapter = new PrismaPg(pool);

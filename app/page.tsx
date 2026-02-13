@@ -1,61 +1,64 @@
-
 import Link from 'next/link';
+import { Briefcase, Wallet, Target, Clock, Code } from 'lucide-react';
 
 const projects = [
-  { id: 1, slug: 'portfolio', name: '포트폴리오', color: 'bg-blue-500' },
-  { id: 2, slug: 'salary-calculator', name: '실수령 계산기', color: 'bg-purple-500' },
-  // { id: 4, slug: 'ai-image-gen', name: 'AI 이미지 생성기', color: 'bg-emerald-500' },
-  // { id: 5, slug: 'memo', name: '메모장', color: 'bg-pink-500' },
-  // { id: 6, slug: 'blog', name: '블로그', color: 'bg-indigo-500' },
-  // { id: 7, slug: 'shop', name: '쇼핑몰', color: 'bg-rose-500' },
-  // { id: 8, slug: 'music', name: '뮤직 플레이어', color: 'bg-cyan-500' },
-  // { id: 9, slug: 'chat', name: '채팅 앱', color: 'bg-amber-500' },
-  // { id: 10, slug: 'weather', name: '날씨 정보', color: 'bg-teal-500' },
+  { id: 1, slug: 'portfolio', name: '포트폴리오', color: 'text-blue-500', bg: 'bg-blue-50', icon: Briefcase },
+  { id: 2, slug: 'salary-calculator', name: '실수령 계산기', color: 'text-purple-500', bg: 'bg-purple-50', icon: Wallet },
+  { id: 3, slug: 'target-amount-calculator', name: '목표금액 시뮬레이터', color: 'text-emerald-500', bg: 'bg-emerald-50', icon: Target },
+  { id: 4, slug: 'commute-calculator', name: '출근시간 계산기', color: 'text-amber-500', bg: 'bg-amber-50', icon: Clock },
+  { id: 7, slug: 'code-manager', name: '코드 조각 저장소', color: 'text-slate-700', bg: 'bg-slate-100', icon: Code },
 ];
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-[#f1f5f9] text-gray-900 selection:bg-blue-100">
-      {/* 장식용 배경 요소 */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-200/40 blur-[120px] rounded-full" />
-        <div className="absolute bottom-[10%] right-[-5%] w-[30%] h-[30%] bg-purple-200/30 blur-[100px] rounded-full" />
+    <div className="min-h-screen bg-white text-gray-900 selection:bg-blue-100 flex flex-col items-center justify-center p-8">
+      {/* 백그라운드 디테일 */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[300px] bg-gradient-to-b from-gray-50/50 to-transparent" />
       </div>
 
-      <main className="relative z-10 max-w-7xl mx-auto px-6 py-20 md:py-32">
+      <main className="w-full max-w-6xl relative z-10">
         {/* 히어로 섹션 */}
-        <section className="mb-20 text-center">
-          <h1 className="text-5xl md:text-7xl font-black tracking-tighter mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
+        <header className="mb-24 text-center">
+          <h2 className="text-5xl md:text-6xl font-black tracking-tight text-gray-950 mb-6">
             EVERYTHING HUB
-          </h1>
-          <p className="text-lg md:text-xl text-gray-500 font-medium">
-            나의 모든 프로젝트를 한눈에 확인하세요.
-          </p>
-        </section>
+          </h2>
+          <div className="flex items-center justify-center gap-3">
+            <div className="h-px w-12 bg-gray-200" />
+            <p className="text-gray-400 font-medium tracking-wide text-sm">
+              내 방식대로 만든, 나를 위한 도구 모음
+            </p>
+            <div className="h-px w-12 bg-gray-200" />
+          </div>
+        </header>
 
-        {/* 프로젝트 버튼 그리드 (한 줄에 5개씩) */}
-        <section id="projects">
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            {projects.map((project) => (
-              <Link
-                key={project.id}
-                href={`/projects/${project.id}/${project.slug}`}
-                className="group relative flex items-center justify-center h-24 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-xl hover:border-blue-300 transition-all duration-300 transform hover:-translate-y-1 active:scale-95 overflow-hidden"
-              >
-                {/* 배경 살짝 컬러 강조 (호버 시) */}
-                <div className={`absolute inset-0 ${project.color} opacity-0 group-hover:opacity-[0.03] transition-opacity`} />
+        {/* 프로젝트 버튼 그리드 (5열) */}
+        <section className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          {projects.map((project) => (
+            <Link
+              key={project.id}
+              href={`/projects/${project.id}/${project.slug}`}
+              className="group relative flex flex-col items-center gap-4 p-8 bg-white border border-gray-100 rounded-[2.5rem] transition-all duration-500 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.08)] hover:-translate-y-2 hover:border-blue-100 active:scale-95"
+            >
+              {/* 아이콘 영역 */}
+              <div className={`w-14 h-14 rounded-3xl ${project.bg} flex items-center justify-center group-hover:scale-110 transition-transform duration-500`}>
+                <project.icon className={`w-6 h-6 ${project.color}`} />
+              </div>
 
-                <span className="text-base font-bold text-gray-700 group-hover:text-blue-600 transition-colors px-4 text-center">
+              <div className="flex flex-col items-center gap-1">
+                <span className="text-xs font-bold text-gray-300 uppercase tracking-widest group-hover:text-blue-400 transition-colors">
+                  0{project.id}
+                </span>
+                <span className="text-[15px] font-black text-gray-800 tracking-tight group-hover:text-gray-950">
                   {project.name}
                 </span>
+              </div>
 
-                {/* 호버 시 하단 선 포인트 */}
-                <div className={`absolute bottom-0 left-0 right-0 h-1 ${project.color} transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left`} />
-              </Link>
-            ))}
-          </div>
+              {/* 하단 점 포인트 */}
+              <div className={`absolute bottom-6 w-1 h-1 rounded-full ${project.color.replace('text', 'bg')} opacity-0 group-hover:opacity-100 transition-opacity`} />
+            </Link>
+          ))}
         </section>
-
       </main>
     </div>
   );
