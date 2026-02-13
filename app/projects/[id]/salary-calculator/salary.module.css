@@ -1,198 +1,399 @@
 .container {
-  min-height: 100vh;
-  padding: 3rem 1.5rem;
-  background-color: #f8fafc;
-  background-image: radial-gradient(circle at 0% 0%, #eff6ff 0%, transparent 50%),
-    radial-gradient(circle at 100% 100%, #fef2f2 0%, transparent 50%);
+  width: 100%;
 }
 
-.card {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(226, 232, 240, 0.8);
-  border-radius: 2rem;
-  padding: 2.5rem;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.03);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+.mainLayout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6rem;
+  align-items: start;
 }
 
-.card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 20px 35px -5px rgba(0, 0, 0, 0.05);
+@media (max-width: 1024px) {
+  .mainLayout {
+    grid-template-columns: 1fr;
+    gap: 4rem;
+  }
 }
 
-.resultCard {
-  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
-  color: white;
-  padding: 3rem 2.5rem;
-  border-radius: 2rem;
-  box-shadow: 0 20px 25px -5px rgba(37, 99, 235, 0.25);
+.inputSection {
+  max-width: 520px;
+}
+
+.resultSection {
+  position: sticky;
+  top: 6rem;
+}
+
+.fieldLabel {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 0.625rem;
+  display: block;
+}
+
+/* Input Styles */
+.inputWrapper {
+  position: relative;
+  margin-bottom: 2.5rem;
+}
+
+.largeInput {
+  width: 100%;
+  font-size: 3rem;
+  font-weight: 900;
+  color: #000000;
+  background: transparent;
+  border: none;
+  border-bottom: 2.5px solid #f1f5f9;
+  padding: 0.75rem 0;
+  outline: none;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: left;
+  letter-spacing: -0.03em;
+}
+
+.largeInput:focus {
+  border-color: #2563eb;
+  padding-left: 0.5rem;
+}
+
+.inputUnit {
+  position: absolute;
+  right: 0;
+  bottom: 1rem;
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #cbd5e1;
+  transition: color 0.3s;
+}
+
+.largeInput:focus+.inputUnit {
+  color: #2563eb;
+}
+
+.gridInputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-bottom: 2.5rem;
+}
+
+.smallInputGroup {
+  margin-bottom: 1.5rem;
+}
+
+.baseInput {
+  width: 100%;
+  padding: 0.875rem 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #1e293b;
+  background: transparent;
+  border: none;
+  border-bottom: 1.5px solid #e2e8f0;
+  outline: none;
+  transition: all 0.3s;
+}
+
+.baseInput:focus {
+  border-color: #2563eb;
+  background: linear-gradient(to top, #eff6ff 0%, transparent 100%);
+}
+
+/* Result Styles */
+.resultSticky {
+  background: #ffffff;
+  border-radius: 2.5rem;
+  padding: 3.5rem;
+  box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.06);
+  border: 1px solid #f8fafc;
   position: relative;
   overflow: hidden;
+  min-height: 840px;
+  /* 고정 높이 확보로 레이아웃 흔들림 방지 */
 }
 
-.resultCard::before {
+.resultSticky::before {
   content: '';
   position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
-  opacity: 0.5;
-}
-
-.inputField {
-  width: 100%;
-  font-size: 2.25rem;
-  font-weight: 900;
-  padding: 1.25rem;
-  background-color: #f8fafc;
-  color: #1e293b;
-  border-radius: 1.25rem;
-  border: 2px solid transparent;
-  outline: none;
-  transition: all 0.2s;
-  appearance: textfield;
-  -moz-appearance: textfield;
-  text-align: right;
-  padding-right: 3.5rem;
-}
-
-.inputField::-webkit-outer-spin-button,
-.inputField::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-.inputField:focus {
-  border-color: #3b82f6;
-  background-color: #ffffff;
-  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
-}
-
-.smallInputField {
-  width: 100%;
-  padding: 0.875rem 1.25rem;
-  background-color: #f8fafc;
-  color: #334155;
-  font-weight: 700;
-  border-radius: 1rem;
-  border: 1px solid #e2e8f0;
-  outline: none;
-  transition: all 0.2s;
-  appearance: textfield;
-  -moz-appearance: textfield;
-}
-
-.smallInputField::-webkit-outer-spin-button,
-.smallInputField::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-.smallInputField:focus {
-  border-color: #3b82f6;
-  background-color: #ffffff;
-  box-shadow: 0 4px 12px -1px rgba(59, 130, 246, 0.1);
-}
-
-.badge {
-  display: inline-block;
-  padding: 0.375rem 1rem;
-  font-size: 0.875rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  border-radius: 9999px;
-  background-color: #eff6ff;
-  color: #2563eb;
-  border: 1px solid #dbeafe;
-  letter-spacing: 0.05em;
-}
-
-/* Tooltip Styles */
-.tooltipContainer {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  margin-left: 0.5rem;
-  color: #94a3b8;
-  cursor: help;
-  transition: color 0.2s;
-}
-
-.tooltipContainer:hover {
-  color: #3b82f6;
-}
-
-.tooltipContent {
-  position: absolute;
-  bottom: 110%;
-  left: 50%;
-  transform: translateX(-50%) translateY(0);
-  background: #1e293b;
-  color: white;
-  padding: 0.875rem 1.125rem;
-  border-radius: 1rem;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  width: 260px;
-  max-width: 85vw;
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 100;
-  box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.4);
-  line-height: 1.6;
-  text-align: left;
+  top: 0;
+  right: 0;
+  width: 100px;
+  height: 100px;
   pointer-events: none;
 }
 
-.tooltipContent::after {
-  content: '';
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  border-width: 6px;
-  border-style: solid;
-  border-color: #1e293b transparent transparent transparent;
+.netPayLabel {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #64748b;
+  margin-bottom: 0.75rem;
 }
 
-.tooltipContainer:hover .tooltipContent {
+.netPayValue {
+  font-size: 4rem;
+  font-weight: 900;
+  color: #1e293b;
+  letter-spacing: -0.04em;
+  margin-bottom: 3rem;
+  line-height: 0.9;
+}
+
+.summaryTable {
+  background: #f8fafc;
+  border-radius: 1.5rem;
+  padding: 1rem 1.5rem;
+  margin-bottom: 2rem;
+  min-height: 140px;
+  /* 상여금 유무와 상관없이 높이 유지 */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.875rem 0;
+  font-size: 0.9375rem;
+}
+
+.summaryRow:not(:last-child) {
+  border-bottom: 1px solid #edf2f7;
+}
+
+.summaryLabel {
+  color: #64748b;
+  font-weight: 600;
+}
+
+.summaryValue {
+  color: #1e293b;
+  font-weight: 800;
+}
+
+.deductionList {
+  margin-top: 1rem;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 72px;
+  /* 행 높이 고정 */
+}
+
+.row:not(:last-child) {
+  border-bottom: 1px solid #f1f5f9;
+}
+
+
+.rowLabelGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.rowLabel {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.helpIcon {
+  color: #cbd5e1;
+  cursor: help;
+  transition: all 0.2s;
+}
+
+.helpIcon:hover {
+  color: #2563eb;
+  transform: scale(1.1);
+}
+
+.tooltipContainer {
+  position: relative;
+  display: inline-flex;
+}
+
+.tooltipText {
+  position: absolute;
+  bottom: 140%;
+  left: 50%;
+  transform: translateX(-50%) translateY(8px);
+  background: #1e293b;
+  color: white;
+  padding: 1rem;
+  border-radius: 1.125rem;
+  font-size: 0.775rem;
+  font-weight: 500;
+  width: 240px;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 50;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+  line-height: 1.6;
+}
+
+.tooltipContainer:hover .tooltipText {
   opacity: 1;
   visibility: visible;
-  transform: translateX(-50%) translateY(-10px);
+  transform: translateX(-50%) translateY(0);
 }
 
-@media (max-width: 768px) {
-  .container {
-    padding: 1.5rem 1rem;
+.rowRate {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin-top: 0.125rem;
+  font-weight: 600;
+}
+
+.rowValueGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  min-height: 40px;
+  justify-content: center;
+}
+
+.originalAmount {
+  font-size: 0.8125rem;
+  color: #cbd5e1;
+  text-decoration: line-through;
+  font-weight: 600;
+}
+
+.slash {
+  font-size: 0.8125rem;
+  color: #e2e8f0;
+  font-weight: 400;
+  margin: 0 0.125rem;
+}
+
+.rowValue {
+  font-size: 0.9375rem;
+  font-weight: 800;
+  color: #1e293b;
+}
+
+.reductionAmount {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #2563eb;
+  margin-top: 0.25rem;
+  background: #eff6ff;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.5rem;
+}
+
+/* Toggle Styles */
+.toggleGroup {
+  display: flex;
+  gap: 0.375rem;
+  margin-bottom: 2rem;
+  background: #f1f5f9;
+  padding: 0.375rem;
+  border-radius: 1rem;
+  width: fit-content;
+}
+
+.toggleBtn {
+  padding: 0.5rem 1.5rem;
+  border-radius: 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 800;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid transparent;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.toggleBtnActive {
+  background: #ffffff;
+  color: #2563eb;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+/* Custom Checkbox/Option */
+.optionItem {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1.25rem;
+  border-radius: 1.5rem;
+  border: 2px solid #f1f5f9;
+  cursor: pointer;
+  transition: all 0.3s;
+  background: #ffffff;
+  margin-bottom: 1rem;
+}
+
+.optionItem:hover {
+  border-color: #e2e8f0;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04);
+}
+
+.optionItemActive {
+  border-color: #2563eb;
+  background: #ffffff;
+}
+
+.optionIcon {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 0.5rem;
+  border: 2px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+  flex-shrink: 0;
+}
+
+.optionItemActive .optionIcon {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: white;
+}
+
+.optionText {
+  display: flex;
+  flex-direction: column;
+}
+
+.optionTitle {
+  font-size: 0.9375rem;
+  font-weight: 800;
+  color: #1e293b;
+}
+
+.optionSub {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin-top: 0.125rem;
+  font-weight: 500;
+}
+
+@media (max-width: 640px) {
+  .resultSticky {
+    padding: 2rem 1.5rem;
   }
 
-  .card {
-    padding: 1.5rem;
-    border-radius: 1.5rem;
+  .netPayValue {
+    font-size: 3rem;
   }
 
-  .resultCard {
-    padding: 2.5rem 1.5rem;
-    border-radius: 1.5rem;
-  }
-
-  .inputField {
-    font-size: 1.75rem;
-    padding: 1rem;
-    padding-right: 3.5rem;
-  }
-
-  .tooltipContent {
-    width: 220px;
-    bottom: 125%;
-    /* Keep it centered relative to the icon, but max-width will handle edges */
-  }
-
-  .tooltipContainer:hover .tooltipContent {
-    transform: translateX(-50%) translateY(-5px);
+  .largeInput {
+    font-size: 2.25rem;
   }
 }

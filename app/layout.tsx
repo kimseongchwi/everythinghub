@@ -9,9 +9,12 @@ const notoSansKr = Noto_Sans_KR({
   weight: ["100", "400", "700", "900"],
 });
 
+import ConditionalNavigation from "./ConditionalNavigation";
+
 export const metadata: Metadata = {
   metadataBase: new URL("https://everythinghub.vercel.app"),
-  title: "Everything Hub | 잡다한 것들 창고",
+  title: "Everything Hub | 내 방식대로 만든 도구 모음",
+  description: "내 방식대로 만든, 나를 위한 도구 모음",
   icons: {
     icon: "/favicon.ico",
   },
@@ -22,7 +25,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "Everything Hub",
-    description: "내 스타일 대로 만든 잡다한 프로젝트 창고",
+    description: "내 방식대로 만든, 나를 위한 도구 모음",
     siteName: "Everything Hub",
     images: [
       {
@@ -43,38 +46,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <body className={`${notoSansKr.className} antialiased bg-[#f1f5f9] text-gray-900 min-h-screen flex flex-col`}>
-        {/* 공통 헤더 */}
-        <header className="sticky top-0 z-[100] border-b border-gray-200 bg-white">
-          <div className="max-w-7xl mx-auto px-6 h-16 flex justify-between items-center">
-            <Link href="/" className="text-xl font-black tracking-tighter text-blue-600">
-              EVERYTHING HUB
-            </Link>
-            <nav className="flex gap-8 text-sm font-bold text-gray-500 items-center">
-              <Link href="/" className="">Home</Link>
-              {process.env.NODE_ENV === 'development' && (
-                <Link href="/admin" className="px-3 py-1.5 flex items-center gap-1.5">
-                  Admin
-                </Link>
-              )}
-            </nav>
-          </div>
-        </header>
-
-        {/* 페이지별 실제 콘텐츠 */}
-        <main className="flex-grow">
-          {children}
-        </main>
-
-        {/* 공통 푸터 */}
-        <footer className="border-t border-gray-200 bg-white py-8">
-          <div className="max-w-7xl mx-auto px-6 text-center">
-            <p className="text-sm text-gray-400 font-medium">
-              © {new Date().getFullYear()} Everything Hub. All rights reserved.
-            </p>
-          </div>
-        </footer>
-      </body>
+      <ConditionalNavigation notoSansKrClassName={notoSansKr.className}>
+        {children}
+      </ConditionalNavigation>
     </html>
   );
 }
