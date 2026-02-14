@@ -4,9 +4,8 @@ import { Briefcase, Wallet, Target, Clock, Code } from 'lucide-react';
 const projects = [
   { id: 1, slug: 'portfolio', name: '포트폴리오', color: 'text-blue-500', bg: 'bg-blue-50', icon: Briefcase },
   { id: 2, slug: 'salary-calculator', name: '실수령 계산기', color: 'text-purple-500', bg: 'bg-purple-50', icon: Wallet },
-  { id: 3, slug: 'target-amount-calculator', name: '목표금액 시뮬레이터', color: 'text-emerald-500', bg: 'bg-emerald-50', icon: Target },
-  { id: 4, slug: 'commute-calculator', name: '출근시간 계산기', color: 'text-amber-500', bg: 'bg-amber-50', icon: Clock },
-  { id: 7, slug: 'code-manager', name: '코드 조각 저장소', color: 'text-slate-700', bg: 'bg-slate-100', icon: Code },
+  { id: 3, slug: 'target-amount-simulator', name: '목표금액 시뮬레이터', color: 'text-emerald-500', bg: 'bg-emerald-50', icon: Target },
+  { id: 4, slug: 'code-archive', name: '코드 아카이브', color: 'text-slate-700', bg: 'bg-slate-100', icon: Code },
 ];
 
 export default function HomePage() {

@@ -336,11 +336,6 @@ export default function SalaryCalculator() {
                 tooltip="국가에 납부하는 소득세액의 10%를 거주하는 지방자치단체에 납부하는 세금입니다."
               />
             </div>
-
-            <div className="mt-8 flex items-start gap-2 p-4 bg-white/50 rounded-xl text-[11px] text-gray-400 leading-relaxed border border-gray-100">
-              <Info size={14} className="shrink-0 mt-0.5" />
-              <p>본 계산 결과는 2024년 기준 요율을 바탕으로 산출된 예상치이며, 실제 월급날 수령액과는 개인별 상황에 따라 차이가 있을 수 있습니다.</p>
-            </div>
           </div>
         </section>
       </div>
