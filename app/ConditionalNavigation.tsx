@@ -28,8 +28,8 @@ export default function ConditionalNavigation({
     <body className={`${notoSansKrClassName} antialiased bg-white text-gray-900 min-h-screen flex flex-col`}>
       {/* 공통 헤더 */}
       <header className="sticky top-0 z-[100] bg-[#f5f5f5] border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-8 h-16 flex justify-between items-center">
-          <Link href="/" className="text-[11px] font-black tracking-[0.4em] text-gray-950 uppercase">
+        <div className="max-w-7xl mx-auto px-6 md:px-8 h-16 flex justify-between items-center">
+          <Link href="/" className="text-[11px] font-black tracking-[0.2em] md:tracking-[0.4em] text-gray-950 uppercase whitespace-nowrap transition-all">
             Everything Hub
           </Link>
           <nav className="flex gap-8 text-[12px] font-bold text-gray-400 items-center">
@@ -50,7 +50,7 @@ export default function ConditionalNavigation({
 
       {/* 공통 푸터 */}
       <footer className="py-8 bg-[#f5f5f5] border-t border-gray-200">
-        <div className="max-w-7xl mx-auto px-8 text-center">
+        <div className="max-w-7xl mx-auto px-6 md:px-8 text-center">
           <p className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em]">
             Copyright © {new Date().getFullYear()} Everything Hub. All rights reserved.
           </p>

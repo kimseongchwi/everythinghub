@@ -5,10 +5,10 @@ import TargetAmountSimulator from './TargetAmountSimulator';
 
 export default function TargetAmountSimulatorPage() {
   return (
-    <div className="min-h-screen bg-white py-12 px-6">
+    <div className="min-h-screen bg-white py-12 px-4 md:px-6">
       <div className="max-w-7xl mx-auto">
-        <header className="mb-20 text-center">
-          <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tighter mb-4">
+        <header className="mb-14 md:mb-20 text-center">
+          <h1 className="text-3xl md:text-5xl font-black text-gray-900 tracking-tighter mb-4 break-keep">
             목표금액 시뮬레이터
           </h1>
         </header>

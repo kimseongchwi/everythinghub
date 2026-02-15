@@ -137,21 +137,29 @@ export default function SalaryCalculator() {
 
   return (
     <div className={styles.container}>
+      {/* 모드 전환 탭 */}
+      <div className="flex justify-center mb-12">
+        <div className={styles.toggleGroup}>
+          <button
+            onClick={() => setIsMonthly(false)}
+            className={`${styles.toggleBtn} ${!isMonthly ? styles.toggleBtnActive : ''}`}
+          >
+            연봉 기준
+          </button>
+          <button
+            onClick={() => setIsMonthly(true)}
+            className={`${styles.toggleBtn} ${isMonthly ? styles.toggleBtnActive : ''}`}
+          >
+            월급 기준
+          </button>
+        </div>
+      </div>
+
       <div className={styles.mainLayout}>
         {/* 입력 섹션 */}
         <section className={styles.inputSection}>
           <div className={styles.inputWrapper}>
             <label className={styles.fieldLabel}>{isMonthly ? '월 세전 급여' : '희망 연봉'}</label>
-            <div className={styles.toggleGroup}>
-              <button
-                onClick={() => setIsMonthly(false)}
-                className={`${styles.toggleBtn} ${!isMonthly ? styles.toggleBtnActive : ''}`}
-              >연봉</button>
-              <button
-                onClick={() => setIsMonthly(true)}
-                className={`${styles.toggleBtn} ${isMonthly ? styles.toggleBtnActive : ''}`}
-              >월급</button>
-            </div>
             <div className="relative">
               <input
                 type="text"

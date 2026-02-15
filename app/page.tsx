@@ -10,7 +10,7 @@ const projects = [
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-white text-gray-900 selection:bg-blue-100 flex flex-col items-center justify-center p-8">
+    <div className="min-h-screen bg-white text-gray-900 selection:bg-blue-100 flex flex-col items-center justify-center p-6 md:p-8">
       {/* 백그라운드 디테일 */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[300px] bg-gradient-to-b from-gray-50/50 to-transparent" />
@@ -19,8 +19,8 @@ export default function HomePage() {
       <main className="w-full max-w-6xl relative z-10">
         {/* 히어로 섹션 */}
         <header className="mb-24 text-center">
-          <h2 className="text-5xl md:text-6xl font-black tracking-tight text-gray-950 mb-6">
-            EVERYTHING HUB
+          <h2 className="text-[2.25rem] leading-[1.1] md:text-6xl font-black tracking-tighter text-gray-950 mb-6 uppercase">
+            Everything Hub
           </h2>
           <div className="flex items-center justify-center gap-3">
             <div className="h-px w-12 bg-gray-200" />
