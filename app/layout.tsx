@@ -19,6 +19,7 @@ export const metadata: Metadata = {
     icon: "/favicon.ico",
   },
   verification: {
+    google: "ydxECgwPCCSU8vLbP6Wz2WdazvVMfgK3Yx1kN8LsfsQ",
     other: {
       "naver-site-verification": "28d29139dc4c618c1adcdcf418b8fc3162b7dede",
     },
