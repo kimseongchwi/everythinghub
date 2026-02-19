@@ -445,11 +445,6 @@
     gap: 1.5rem;
   }
 
-  .resultSticky {
-    padding: 2rem;
-    border-radius: 2rem;
-  }
-
   .tableSection {
     margin-top: 4rem;
   }
@@ -508,10 +503,6 @@
   .toggleBtn {
     padding: 0.4rem 0.8rem;
     font-size: 0.75rem;
-  }
-
-  .resultSticky {
-    padding: 1.25rem 1rem;
   }
 
   .mobileGrid {
