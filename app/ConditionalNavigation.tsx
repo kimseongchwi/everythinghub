@@ -49,8 +49,18 @@ export default function ConditionalNavigation({
       </main>
 
       {/* 공통 푸터 */}
-      <footer className="py-8 bg-[#f5f5f5] border-t border-gray-200">
+      <footer className="py-12 bg-[#f5f5f5] border-t border-gray-200">
         <div className="max-w-7xl mx-auto px-6 md:px-8 text-center">
+          <div className="flex flex-col md:flex-row justify-center items-center gap-4 md:gap-8 mb-6 text-[11px] font-bold text-gray-500 tracking-wider">
+            <Link href="/privacy" className="hover:text-blue-600 transition-colors">개인정보처리방침</Link>
+            <span className="hidden md:inline text-gray-300">|</span>
+            <div className="flex flex-col md:flex-row gap-1 md:gap-2 items-center">
+              <span className="">문의:</span>
+              <a href="mailto:kimsung01265@gmail.com" className="hover:text-blue-600 transition-colors">kimsung01265@gmail.com</a>
+              <span className="hidden md:inline text-gray-300">/</span>
+              <a href="mailto:ghfkddl665@naver.com" className="hover:text-blue-600 transition-colors">ghfkddl665@naver.com</a>
+            </div>
+          </div>
           <p className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em]">
             Copyright © {new Date().getFullYear()} Everything Hub. All rights reserved.
           </p>

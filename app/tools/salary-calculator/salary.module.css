@@ -1,0 +1,426 @@
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+/* Hide Spinners */
+.container input::-webkit-outer-spin-button,
+.container input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.container input[type=number] {
+  -webkit-appearance: none;
+  -moz-appearance: textfield;
+  appearance: none;
+}
+
+.mainLayout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: start;
+}
+
+.inputSection {
+  width: 100%;
+  max-width: 520px;
+}
+
+.resultSection {
+  position: sticky;
+  top: 6rem;
+  width: 100%;
+  max-width: 600px;
+}
+
+.fieldLabel {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 0.625rem;
+  display: block;
+}
+
+/* Input Styles */
+.inputWrapper {
+  position: relative;
+  margin-bottom: 2.5rem;
+}
+
+.largeInput {
+  width: 100%;
+  font-size: 3rem;
+  font-weight: 900;
+  color: #000000;
+  background: transparent;
+  border: none;
+  border-bottom: 2.5px solid #f1f5f9;
+  padding: 0.75rem 0;
+  outline: none;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  letter-spacing: -0.03em;
+}
+
+.largeInput:focus {
+  border-color: #10b981;
+}
+
+.inputUnit {
+  position: absolute;
+  right: 0;
+  bottom: 1rem;
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #cbd5e1;
+  transition: color 0.3s;
+  pointer-events: none;
+}
+
+.largeInput:focus+.inputUnit {
+  color: #10b981;
+}
+
+.gridInputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-bottom: 2.5rem;
+}
+
+.smallInputGroup {
+  margin-bottom: 1.5rem;
+}
+
+.baseInput {
+  width: 100%;
+  padding: 0.875rem 1.5rem 0.875rem 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #1e293b;
+  background: transparent;
+  border: none;
+  border-bottom: 1.5px solid #e2e8f0;
+  outline: none;
+  transition: all 0.3s;
+}
+
+.baseInput:focus {
+  border-color: #10b981;
+}
+
+.toggleGroup {
+  display: flex;
+  gap: 0.375rem;
+  margin: 0 auto 2rem;
+  background: #f1f5f9;
+  padding: 0.375rem;
+  border-radius: 1rem;
+  width: fit-content;
+}
+
+.toggleBtn {
+  padding: 0.5rem 1.25rem;
+  border-radius: 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 800;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid transparent;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.toggleBtnActive {
+  background: #ffffff;
+  color: #10b981;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+
+.netPayLabel {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #64748b;
+  margin-bottom: 0.75rem;
+}
+
+.netPayValue {
+  font-size: 4rem;
+  font-weight: 900;
+  color: #1e293b;
+  letter-spacing: -0.04em;
+  margin-bottom: 2.5rem;
+  line-height: 1;
+}
+
+.summaryTable {
+  background: #f8fafc;
+  border-radius: 1.5rem;
+  padding: 0.5rem 0;
+  margin-bottom: 2.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem 0.625rem;
+  font-size: 1rem;
+}
+
+.summaryRow:not(:last-child) {
+  border-bottom: 1px solid #edf2f7;
+}
+
+.summaryLabel {
+  color: #64748b;
+  font-weight: 600;
+}
+
+.summaryValue {
+  color: #1e293b;
+  font-weight: 800;
+}
+
+/* Deduction Specific Styles */
+.deductionList {
+  margin-top: 1rem;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 0.625rem;
+  min-height: 6.25rem;
+  border-bottom: 1px solid #f8fafc;
+}
+
+.row:last-child {
+  border-bottom: none;
+}
+
+.rowLabelGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.rowLabel {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.rowRate {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.rowValueGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  min-width: 180px;
+  flex-shrink: 0;
+  gap: 0.125rem;
+}
+
+.originalAmount {
+  font-size: 0.8125rem;
+  color: #cbd5e1;
+  text-decoration: line-through;
+  font-weight: 600;
+}
+
+.slash {
+  font-size: 0.8125rem;
+  color: #e2e8f0;
+  margin: 0 0.125rem;
+}
+
+.rowValue {
+  font-size: 1.125rem;
+  font-weight: 800;
+  color: #1e293b;
+  line-height: 1;
+}
+
+.reductionAmount {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #10b981;
+  margin-top: 0.375rem;
+  background: #f0fdf4;
+  padding: 0.25rem 0.625rem;
+  border-radius: 0.5rem;
+}
+
+
+/* Custom Checkbox/Option */
+.optionItem {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1.25rem;
+  border-radius: 1.5rem;
+  border: 2px solid #f1f5f9;
+  cursor: pointer;
+  transition: all 0.3s;
+  background: #ffffff;
+  margin-bottom: 1rem;
+}
+
+.optionItem:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04);
+}
+
+.optionItemActive {
+  border-color: #10b981;
+  background: #f0fdf4;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1);
+}
+
+.optionIcon {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 0.5rem;
+  border: 2px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.optionItemActive .optionIcon {
+  background: #10b981;
+  border-color: #10b981;
+  color: white;
+}
+
+.optionText {
+  display: flex;
+  flex-direction: column;
+}
+
+.optionTitle {
+  font-size: 0.9375rem;
+  font-weight: 800;
+  color: #1e293b;
+}
+
+.optionSub {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin-top: 0.125rem;
+  font-weight: 500;
+}
+
+@media (max-width: 900px) {
+  .mainLayout {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+
+  .inputSection,
+  .resultSection {
+    max-width: 100%;
+  }
+
+  .resultSection {
+    position: static;
+    margin-top: 1rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .container {
+    padding: 0;
+  }
+
+  .largeInput {
+    font-size: 2.25rem;
+  }
+
+  .inputUnit {
+    font-size: 1.25rem;
+    bottom: 0.875rem;
+  }
+
+  .netPayValue {
+    font-size: 3rem;
+    margin-bottom: 2rem;
+  }
+
+  .gridInputs {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .largeInput {
+    font-size: 2rem;
+  }
+
+  .netPayValue {
+    font-size: 2.5rem;
+  }
+
+  .row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 5.75rem;
+    padding: 1rem 0.625rem;
+  }
+
+  .rowValueGroup {
+    align-items: flex-end;
+    min-width: 150px;
+    flex-shrink: 0;
+  }
+
+  .optionItem {
+    padding: 1rem;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 320px) {
+  .largeInput {
+    font-size: 1.75rem;
+  }
+
+  .netPayValue {
+    font-size: 2.125rem;
+  }
+
+  .summaryRow {
+    font-size: 0.875rem;
+    padding: 0.75rem 0.25rem;
+  }
+
+  .rowValue {
+    font-size: 1rem;
+  }
+
+  .toggleBtn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.75rem;
+  }
+}
