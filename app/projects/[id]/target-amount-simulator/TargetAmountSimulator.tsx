@@ -14,8 +14,6 @@ import {
   ReferenceLine
 } from 'recharts';
 
-
-
 export default function TargetAmountSimulator() {
   const thisYear = new Date().getFullYear();
   // Inputs
@@ -24,7 +22,6 @@ export default function TargetAmountSimulator() {
   const [monthlyIncome, setMonthlyIncome] = useState<number>(2500000);
   const [monthlyExpense, setMonthlyExpense] = useState<number>(1000000);
   const [annualBonus, setAnnualBonus] = useState<number>(0);
-
 
   // Reverse Mode Inputs
   const [mode, setMode] = useState<'reach' | 'reverse'>('reach');
@@ -41,40 +38,25 @@ export default function TargetAmountSimulator() {
     requiredSavingRate: 0,
     progress: 0,
     remainingAmount: 0,
-    chartData: [] as { year: string; amount: number; target: number }[],
+    chartData: [] as { x: number; label: string; amount: number; isGoal?: boolean }[],
     tableData: [] as { year: number; months: (number | null)[] }[],
   });
-
 
   useEffect(() => {
     const monthlySaving = Math.max(0, monthlyIncome - monthlyExpense);
     const savingRate = monthlyIncome > 0 ? (monthlySaving / monthlyIncome) * 100 : 0;
     const remainingAmount = Math.max(0, targetAmount - initialAmount);
 
-    // 1. Simulation
     let currentWealth = initialAmount;
     let totalMonths = 0;
     let exactMonthsNeeded = Infinity;
-    let tempMonthlyIncome = monthlyIncome;
-    let tempMonthlyExpense = monthlyExpense;
 
     const maxYears = 30;
     const maxMonths = maxYears * 12;
-
-    const chartData = [];
+    const chartData: { x: number; label: string; amount: number; isGoal?: boolean }[] = [];
     const tableData: { year: number; months: (number | null)[] }[] = [];
+    const currentMonthIdx = new Date().getMonth();
 
-    const currentMonthIdx = new Date().getMonth(); // 0-11
-
-    // Initial data point for chart
-    chartData.push({
-      year: `${thisYear}.${currentMonthIdx + 1}`,
-      amount: initialAmount,
-      target: targetAmount
-    });
-
-
-    // Helper for table data
     const getYearRow = (yearNum: number) => {
       let row = tableData.find(r => r.year === yearNum);
       if (!row) {
@@ -84,71 +66,64 @@ export default function TargetAmountSimulator() {
       return row;
     };
 
-    // Store Month 0 (Current)
     getYearRow(thisYear).months[currentMonthIdx] = initialAmount;
+
+    // 시작 지점 (예: 2026.2)
+    chartData.push({
+      x: 0,
+      label: `${thisYear}.${currentMonthIdx + 1}`,
+      amount: initialAmount,
+    });
 
     if (currentWealth >= targetAmount) {
       exactMonthsNeeded = 0;
+      chartData[0].isGoal = true;
     } else if (monthlySaving <= 0 && annualBonus <= 0) {
       exactMonthsNeeded = Infinity;
     } else {
       while (totalMonths < maxMonths) {
         totalMonths++;
+        currentWealth += monthlySaving;
 
-        // 1-1. Monthly saving
-        const currentMonthlySaving = Math.max(0, tempMonthlyIncome - tempMonthlyExpense);
-        currentWealth += currentMonthlySaving;
-
-
-
-        // 1-3. Annual occurrences (Bonus)
         if (totalMonths % 12 === 0) {
           currentWealth += annualBonus;
         }
 
-
-        // Record exact achievement month
-        if (currentWealth >= targetAmount && exactMonthsNeeded === Infinity) {
-          exactMonthsNeeded = totalMonths;
-        }
-
-        // Record for Table
         const absoluteMonth = currentMonthIdx + totalMonths;
+        const simYear = thisYear + Math.floor(absoluteMonth / 12);
+        const simMonth = (absoluteMonth % 12) + 1;
+
+        // 표 데이터 기록
         const yearOffsetFromStart = Math.floor(absoluteMonth / 12);
         const simMonthIdx = absoluteMonth % 12;
         if (yearOffsetFromStart < maxYears) {
           getYearRow(thisYear + yearOffsetFromStart).months[simMonthIdx] = Math.floor(currentWealth);
         }
 
-
-        // Record for Chart (Every 12 months for cleaner X-axis, or 6 months if period is short)
-        const chartInterval = maxMonths <= 60 ? 6 : 12;
-        if (totalMonths % chartInterval === 0 && totalMonths > 0) {
-          const absMonth = currentMonthIdx + totalMonths;
-          const simYear = thisYear + Math.floor(absMonth / 12);
-          const simMonth = (absMonth % 12) + 1;
-
-          const label = totalMonths % 12 === 0
-            ? `${simYear}년`
-            : `${simYear}.${simMonth}`;
-
+        // 매년 1월 눈금용 데이터 (2027년 등)
+        if (absoluteMonth % 12 === 0) {
           chartData.push({
-            year: label,
+            x: totalMonths,
+            label: `${simYear}년`,
             amount: Math.floor(currentWealth),
-            target: targetAmount
           });
         }
 
-
-
-        // Stop simulation if target reached and we've filled the current year's chart markers
-        if (exactMonthsNeeded !== Infinity && totalMonths % 12 === 0) break;
+        // 목표 달성 시점 (예: 2031.2) - 데이터만 보관하고 X축 ticks에서는 제외
+        if (currentWealth >= targetAmount && exactMonthsNeeded === Infinity) {
+          exactMonthsNeeded = totalMonths;
+          chartData.push({
+            x: totalMonths,
+            label: `${simYear}.${simMonth}`,
+            amount: Math.floor(currentWealth),
+            isGoal: true
+          });
+          break;
+        }
       }
     }
 
     const monthsNeeded = exactMonthsNeeded;
-
-    // 2. Achievement Date
     let achievementDate = '';
     if (monthsNeeded !== Infinity) {
       const date = new Date();
@@ -156,14 +131,10 @@ export default function TargetAmountSimulator() {
       achievementDate = `${date.getFullYear()}년 ${date.getMonth() + 1}월`;
     }
 
-    // 3. Reverse Calculation
     const totalBonusInTime = annualBonus * targetYears;
     const gapToBridge = Math.max(0, targetAmount - initialAmount - totalBonusInTime);
-
     const requiredMonthlySaving = gapToBridge / (targetYears * 12);
     const requiredSavingRate = monthlyIncome > 0 ? (requiredMonthlySaving / monthlyIncome) * 100 : 0;
-
-    // 4. Progress
     const progress = Math.min(100, (initialAmount / targetAmount) * 100);
 
     setResults({
@@ -180,9 +151,7 @@ export default function TargetAmountSimulator() {
       chartData,
       tableData,
     });
-  }, [targetAmount, initialAmount, monthlyIncome, monthlyExpense, annualBonus, targetYears]);
-
-
+  }, [targetAmount, initialAmount, monthlyIncome, monthlyExpense, annualBonus, targetYears, thisYear]);
 
   const formatKrw = (val: number) => {
     if (val === Infinity) return '계산 불가';
@@ -196,26 +165,20 @@ export default function TargetAmountSimulator() {
 
   return (
     <div className={styles.container}>
-      {/* 모드 전환 탭 */}
       <div className="flex justify-center mb-12">
         <div className={styles.toggleGroup}>
           <button
             onClick={() => setMode('reach')}
             className={`${styles.toggleBtn} ${mode === 'reach' ? styles.toggleBtnActive : ''}`}
-          >
-            기본 달성 계산
-          </button>
+          >기본 달성 계산</button>
           <button
             onClick={() => setMode('reverse')}
             className={`${styles.toggleBtn} ${mode === 'reverse' ? styles.toggleBtnActive : ''}`}
-          >
-            목표 기간 역계산
-          </button>
+          >목표 기간 역계산</button>
         </div>
       </div>
 
       <div className={styles.mainLayout}>
-        {/* 입력 섹션 */}
         <section className={styles.inputSection}>
           <div className={styles.inputWrapper}>
             <label className={styles.fieldLabel}>목표 금액</label>
@@ -223,7 +186,6 @@ export default function TargetAmountSimulator() {
               <input
                 type="text"
                 value={targetAmount === 0 ? '' : targetAmount.toLocaleString()}
-                onFocus={(e) => { if (targetAmount === 0) e.target.value = ''; }}
                 onChange={(e) => handlePriceChange(e.target.value, setTargetAmount)}
                 className={styles.largeInput}
                 placeholder="0"
@@ -241,7 +203,6 @@ export default function TargetAmountSimulator() {
               <input
                 type="text"
                 value={initialAmount === 0 ? '' : initialAmount.toLocaleString()}
-                onFocus={(e) => { if (initialAmount === 0) e.target.value = ''; }}
                 onChange={(e) => handlePriceChange(e.target.value, setInitialAmount)}
                 className={styles.baseInput}
                 placeholder="0"
@@ -255,7 +216,6 @@ export default function TargetAmountSimulator() {
               <input
                 type="text"
                 value={annualBonus === 0 ? '' : annualBonus.toLocaleString()}
-                onFocus={(e) => { if (annualBonus === 0) e.target.value = ''; }}
                 onChange={(e) => handlePriceChange(e.target.value, setAnnualBonus)}
                 className={styles.baseInput}
                 placeholder="0"
@@ -271,7 +231,6 @@ export default function TargetAmountSimulator() {
               <input
                 type="text"
                 value={monthlyIncome === 0 ? '' : monthlyIncome.toLocaleString()}
-                onFocus={(e) => { if (monthlyIncome === 0) e.target.value = ''; }}
                 onChange={(e) => handlePriceChange(e.target.value, setMonthlyIncome)}
                 className={styles.baseInput}
                 placeholder="0"
@@ -285,7 +244,6 @@ export default function TargetAmountSimulator() {
                 <input
                   type="text"
                   value={monthlyExpense === 0 ? '' : monthlyExpense.toLocaleString()}
-                  onFocus={(e) => { if (monthlyExpense === 0) e.target.value = ''; }}
                   onChange={(e) => handlePriceChange(e.target.value, setMonthlyExpense)}
                   className={styles.baseInput}
                   placeholder="0"
@@ -309,153 +267,121 @@ export default function TargetAmountSimulator() {
               </div>
             )}
           </div>
-
-
-
-
         </section>
 
-        {/* 결과 섹션 */}
         <section className={styles.resultSection}>
           <div className={styles.resultSticky}>
             {mode === 'reach' ? (
               <>
-                <p className={styles.netPayLabel}>목표 달성 소요 기간</p>
+                <p className={styles.netPayLabel}>목표 달성 예상 시점</p>
                 {results.monthsNeeded === Infinity ? (
-                  <h2 className={styles.netPayValue} style={{ fontSize: '2.5rem' }}>저축액을 늘려보세요</h2>
+                  <h2 className={styles.netPayValue} style={{ fontSize: '2rem' }}>저축 계획이 필요해요</h2>
                 ) : (
-                  <h2 className={styles.netPayValue}>
-                    {results.yearsNeeded > 0 ? `${results.yearsNeeded}년 ` : ''}
-                    {results.monthsRemaining}개월
-                  </h2>
+                  <>
+                    <h2 className={styles.netPayValue}>
+                      {results.achievementDate}
+                    </h2>
+                    <p className={styles.subValue}>
+                      앞으로 {results.yearsNeeded > 0 ? `${results.yearsNeeded}년 ` : ''}
+                      {results.monthsRemaining}개월 더 모으면 돼요
+                    </p>
+                  </>
                 )}
               </>
             ) : (
               <>
                 <p className={styles.netPayLabel}>달성을 위한 필요 월 저축액</p>
                 <h2 className={styles.netPayValue}>{formatKrw(results.requiredMonthlySaving)}</h2>
-                <p className={styles.subValue}>
-                  수입의 {results.requiredSavingRate.toFixed(1)}% 저축 필요
-                </p>
+                <p className={styles.subValue}>수입의 {results.requiredSavingRate.toFixed(1)}% 저축 필요</p>
               </>
             )}
 
             <div className={styles.summaryTable}>
               <div className={styles.summaryRow}>
-                <div className="flex items-center gap-1">
-                  <span className={styles.summaryLabel}>목표 금액</span>
-                  <ReductionTooltip text="당신이 도달하고자 하는 최종 목표 자산입니다." />
-                </div>
+                <span className={styles.summaryLabel}>목표 금액</span>
                 <span className={styles.summaryValue}>{formatKrw(targetAmount)}</span>
               </div>
               <div className={styles.summaryRow}>
-                <div className="flex items-center gap-1">
-                  <span className={styles.summaryLabel}>현재 자산</span>
-                  <ReductionTooltip text="현재 보유 중인 순자산(현금, 주식, 예적금 등)입니다." />
-                </div>
+                <span className={styles.summaryLabel}>현재 자산</span>
                 <span className={styles.summaryValue}>{formatKrw(initialAmount)}</span>
               </div>
-
               <div className={styles.summaryRow}>
-                <div className="flex items-center gap-1">
-                  <span className={styles.summaryLabel}>
-                    {mode === 'reach' ? '월 저축액' : '필요 월 저축액'}
-                  </span>
-                  <ReductionTooltip text={mode === 'reach' ? "현재 수입과 지출을 기반으로 매달 저축 가능한 금액입니다." : "설정한 기간 내에 목표를 달성하기 위해 매달 저축해야 하는 최소 금액입니다."} />
-                </div>
-                <span className={styles.summaryValue}>
-                  {mode === 'reach' ? formatKrw(results.monthlySaving) : formatKrw(results.requiredMonthlySaving)}
-                </span>
-              </div>
-
-
-
-              <div className={styles.summaryRow}>
-                <div className="flex items-center gap-1">
-                  <span className={styles.summaryLabel}>
-                    {mode === 'reach' ? '저축률' : '필요 저축률'}
-                  </span>
-                  <ReductionTooltip text="월 실수령액 대비 저축액이 차지하는 비중입니다." />
-                </div>
-                <span className={styles.summaryValue}>
-                  {mode === 'reach' ? results.savingRate.toFixed(1) : results.requiredSavingRate.toFixed(1)}%
-                </span>
+                <span className={styles.summaryLabel}>{mode === 'reach' ? '월 저축액' : '필요 월 저축액'}</span>
+                <span className={styles.summaryValue}>{mode === 'reach' ? formatKrw(results.monthlySaving) : formatKrw(results.requiredMonthlySaving)}</span>
               </div>
               <div className={styles.summaryRow}>
-                <div className="flex items-center gap-1">
-                  <span className={styles.summaryLabel}>목표까지 부족한 금액</span>
-                  <ReductionTooltip text="현재 자산에서 목표 금액까지 도달하기 위해 더 모아야 하는 순수 금액입니다." />
-                </div>
+                <span className={styles.summaryLabel}>목표까지 부족한 금액</span>
                 <span className={`${styles.summaryValue} !text-emerald-600`}>{formatKrw(results.remainingAmount)}</span>
               </div>
-
             </div>
 
-            {/* 마일스톤 프로그레스 */}
             <div className={styles.progressContainer}>
               <div className={styles.progressLabel}>
                 <span>현재 자산 달성률</span>
                 <span>{results.progress.toFixed(1)}%</span>
               </div>
               <div className={styles.progressBar}>
-                <div
-                  className={styles.progressFill}
-                  style={{ width: `${results.progress}%` }}
-                />
+                <div className={styles.progressFill} style={{ width: `${results.progress}%` }} />
               </div>
               <div className={styles.milestones}>
-                <span>25%</span>
-                <span>50%</span>
-                <span>75%</span>
-                <span>100%</span>
+                <span>25%</span><span>50%</span><span>75%</span><span>100%</span>
               </div>
             </div>
 
-            {/* 자산 성장 차트 */}
             {results.chartData.length > 0 && (
               <div className={styles.chartContainer}>
                 <h4 className={styles.chartTitle}>자산 성장 추이</h4>
                 <div style={{ width: '100%', minHeight: 260 }}>
                   <ResponsiveContainer width="100%" height={260}>
-                    <AreaChart
-                      data={results.chartData}
-                      margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
-                    >
+                    <AreaChart data={results.chartData} margin={{ top: 10, right: 40, left: 0, bottom: 0 }}>
                       <defs>
                         <linearGradient id="colorAsset" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-                          <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                          <stop offset="5%" stopColor="#10b981" stopOpacity={0.1} />
+                          <stop offset="95%" stopColor="#10b981" stopOpacity={0.01} />
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                       <XAxis
-                        dataKey="year"
+                        dataKey="x"
+                        type="number"
+                        domain={[0, results.monthsNeeded + Math.max(1, Math.floor(results.monthsNeeded * 0.05))]}
                         fontSize={10}
                         tickLine={false}
                         axisLine={false}
                         tick={{ fill: '#94a3b8', fontWeight: 600 }}
                         dy={10}
+                        tickFormatter={(val) => {
+                          const point = results.chartData.find(p => p.x === val);
+                          if (!point) return '';
+                          return point.label;
+                        }}
+                        ticks={results.chartData.filter((p) => {
+                          // 시작점(0)과 '년' 단위 데이터만 축 레이블로 표시
+                          return p.x === 0 || p.label.includes('년');
+                        }).map(p => p.x)}
                       />
                       <YAxis
-                        fontSize={10}
-                        tickLine={false}
-                        axisLine={false}
-                        tick={{ fill: '#94a3b8', fontWeight: 600 }}
+                        fontSize={10} tickLine={false} axisLine={false} tick={{ fill: '#94a3b8', fontWeight: 600 }}
                         tickFormatter={(value) => {
                           if (value >= 100000000) return `${(value / 100000000).toFixed(value % 100000000 === 0 ? 0 : 1)}억`;
-                          if (value >= 10000) return `${(value / 10000).toLocaleString()}만`;
+                          if (value >= 10000) return `${Math.floor(value / 10000).toLocaleString()}만`;
                           return value;
                         }}
                         width={50}
                       />
                       <Tooltip
+                        cursor={{ stroke: '#f1f5f9', strokeWidth: 2 }}
                         content={({ active, payload }) => {
                           if (active && payload && payload.length) {
+                            const data = payload[0].payload;
                             return (
                               <div className={styles.chartTooltip}>
-                                <p className={styles.tooltipYear}>{payload[0].payload.year}</p>
-                                <p className={styles.tooltipAmount}>
-                                  {payload[0].value?.toLocaleString()}원
+                                <p className={styles.tooltipYear}>
+                                  {data.isGoal ? "💰 목표 달성 예정" : data.label}
+                                </p>
+                                <p className={styles.tooltipAmount} style={{ color: data.isGoal ? '#10b981' : '#1e293b' }}>
+                                  {data.isGoal ? `${data.label} 기준 | ` : ''}
+                                  {data.amount?.toLocaleString()}원
                                 </p>
                               </div>
                             );
@@ -468,39 +394,52 @@ export default function TargetAmountSimulator() {
                         stroke="#cbd5e1"
                         strokeDasharray="5 5"
                         label={{
-                          value: '목표',
+                          value: '목표액',
                           position: 'right',
                           fill: '#94a3b8',
                           fontSize: 10,
-                          fontWeight: 700
+                          fontWeight: 700,
+                          dx: 5
                         }}
                       />
                       <Area
-                        type="linear"
+                        type="monotone"
                         dataKey="amount"
                         stroke="#10b981"
-                        strokeWidth={3}
+                        strokeWidth={4}
                         fillOpacity={1}
                         fill="url(#colorAsset)"
-                        animationDuration={1500}
+                        animationDuration={2000}
+                        activeDot={{
+                          r: 6,
+                          fill: '#10b981',
+                          strokeWidth: 2,
+                          stroke: '#fff'
+                        }}
+                        // Goal dot always visible as a hollow circle
+                        dot={(props: any) => {
+                          const { cx, cy, payload } = props;
+                          if (payload.isGoal) {
+                            return (
+                              <circle key="goal-dot" cx={cx} cy={cy} r={5} fill="white" stroke="#10b981" strokeWidth={2} />
+                            );
+                          }
+                          return <></>;
+                        }}
                       />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
               </div>
             )}
-
-
-
           </div>
         </section>
       </div>
 
-      {/* 월간 자산 성장 테이블 */}
       {results.tableData.length > 0 && (
         <section className={styles.tableSection}>
           <div className={styles.tableHeader}>
-            <h3 className={styles.tableTitle}>월간 자산 성장 시뮬레이션</h3>
+            <h3 className={styles.tableTitle}>월간 자산 성장 시뮬레이션 <span className="text-xs font-normal text-slate-400 ml-2">(단위: 원)</span></h3>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 bg-[#f0fdf4] border border-emerald-100 rounded-sm"></div>
@@ -513,25 +452,19 @@ export default function TargetAmountSimulator() {
             <table className={styles.assetTable}>
               <thead>
                 <tr>
-                  <th>구분</th>
-                  {Array.from({ length: 12 }, (_, i) => (
-                    <th key={i}>{i + 1}월</th>
-                  ))}
+                  <th style={{ width: '55px' }}>구분</th>
+                  {Array.from({ length: 12 }, (_, i) => (<th key={i}>{i + 1}월</th>))}
                 </tr>
               </thead>
               <tbody>
                 {results.tableData.map((row) => (
                   <tr key={row.year}>
-                    <td>{row.year === thisYear ? `${row.year}년` : `${row.year}년`}</td>
+                    <td>{row.year}년</td>
                     {row.months.map((amount, monthIdx) => {
                       const isReached = amount !== null && amount >= targetAmount;
-
                       return (
-                        <td
-                          key={monthIdx}
-                          className={isReached ? styles.cellReached : ''}
-                        >
-                          {amount !== null ? `${amount.toLocaleString()}원` : '-'}
+                        <td key={monthIdx} className={isReached ? styles.cellReached : ''}>
+                          {amount !== null ? amount.toLocaleString() : '-'}
                         </td>
                       );
                     })}
@@ -542,18 +475,42 @@ export default function TargetAmountSimulator() {
           </div>
         </section>
       )}
-
     </div>
-
-
   );
 }
 
 function ReductionTooltip({ text }: { text: string }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    if (isOpen) document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isOpen]);
+
   return (
-    <div className={styles.tooltipContainer}>
-      <HelpCircle size={12} className={styles.helpIcon} />
-      <div className={styles.tooltipText}>{text}</div>
+    <div
+      className={styles.tooltipContainer}
+      ref={containerRef}
+      onMouseEnter={() => setIsOpen(true)}
+      onMouseLeave={() => setIsOpen(false)}
+    >
+      <HelpCircle
+        size={14}
+        className={styles.helpIcon}
+        onClick={(e) => {
+          e.stopPropagation();
+          setIsOpen(!isOpen);
+        }}
+      />
+      <div className={`${styles.tooltipText} ${isOpen ? styles.visible : ""}`}>
+        {text}
+      </div>
     </div>
   );
 }

@@ -27,17 +27,9 @@
   align-items: start;
 }
 
-@media (max-width: 1024px) {
-  .mainLayout {
-    grid-template-columns: 1fr;
-    gap: 3rem;
-  }
-}
-
 .inputSection {
   width: 100%;
   max-width: 520px;
-  margin: 0 auto;
 }
 
 .resultSection {
@@ -45,7 +37,6 @@
   top: 6rem;
   width: 100%;
   max-width: 600px;
-  margin: 0 auto;
 }
 
 .fieldLabel {
@@ -54,7 +45,6 @@
   color: #1e293b;
   margin-bottom: 0.625rem;
   display: block;
-  transition: all 0.3s;
 }
 
 /* Input Styles */
@@ -74,10 +64,8 @@
   padding: 0.75rem 0;
   outline: none;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  text-align: left;
   letter-spacing: -0.03em;
 }
-
 
 .largeInput:focus {
   border-color: #10b981;
@@ -93,7 +81,6 @@
   transition: color 0.3s;
   pointer-events: none;
 }
-
 
 .largeInput:focus+.inputUnit {
   color: #10b981;
@@ -113,7 +100,6 @@
 .baseInput {
   width: 100%;
   padding: 0.875rem 1.5rem 0.875rem 0;
-  /* Match Target Padding */
   font-size: 1.125rem;
   font-weight: 700;
   color: #1e293b;
@@ -122,10 +108,7 @@
   border-bottom: 1.5px solid #e2e8f0;
   outline: none;
   transition: all 0.3s;
-  text-align: left;
-  /* Match Target Alignment */
 }
-
 
 .baseInput:focus {
   border-color: #10b981;
@@ -134,13 +117,11 @@
 .toggleGroup {
   display: flex;
   gap: 0.375rem;
-  margin-bottom: 2rem;
+  margin: 0 auto 2rem;
   background: #f1f5f9;
   padding: 0.375rem;
   border-radius: 1rem;
   width: fit-content;
-  margin-left: auto;
-  margin-right: auto;
 }
 
 .toggleBtn {
@@ -168,8 +149,6 @@
   border-radius: 2.5rem;
   padding: 3rem;
   border: 1px solid #f8fafc;
-  position: relative;
-  /* overflow: hidden removed to prevent tooltip clipping */
 }
 
 .netPayLabel {
@@ -227,15 +206,13 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.5rem 0.625rem;
-  /* Matching summaryRow offset */
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  min-height: 4.5rem;
+  padding: 1.25rem 0.625rem;
+  min-height: 6.25rem;
+  border-bottom: 1px solid #f8fafc;
 }
 
-.row:not(:last-child) {
-  border-bottom: 1px solid #f8fafc;
-  /* Even subtler line */
+.row:last-child {
+  border-bottom: none;
 }
 
 .rowLabelGroup {
@@ -263,10 +240,8 @@
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  min-width: 200px;
+  min-width: 180px;
   flex-shrink: 0;
-  text-align: right;
-  justify-content: center;
   gap: 0.125rem;
 }
 
@@ -298,7 +273,6 @@
   background: #f0fdf4;
   padding: 0.25rem 0.625rem;
   border-radius: 0.5rem;
-  display: inline-block;
 }
 
 /* Tooltip Styles */
@@ -311,7 +285,6 @@
   position: absolute;
   bottom: 160%;
   left: 0;
-  /* Grow to the right from the icon to avoid left clipping */
   transform: translateY(8px);
   background: #1e293b;
   color: white;
@@ -320,10 +293,9 @@
   font-size: 0.8125rem;
   font-weight: 500;
   width: 260px;
-  max-width: 320px;
   opacity: 0;
   visibility: hidden;
-  transition: all 0.3s;
+  transition: all 0.3s ease;
   z-index: 100;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
   pointer-events: none;
@@ -362,7 +334,7 @@
 }
 
 .optionItemActive {
-  border-color: #10b981 !important;
+  border-color: #10b981;
   background: #f0fdf4;
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1);
 }
