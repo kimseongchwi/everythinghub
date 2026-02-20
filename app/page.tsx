@@ -1,11 +1,10 @@
 import Link from 'next/link';
-import { Briefcase, Wallet, Target, Clock, Code } from 'lucide-react';
+import { Wallet, Target, Code } from 'lucide-react';
 
 const projects = [
-  { id: 1, slug: 'portfolio', name: '포트폴리오', color: 'text-blue-500', bg: 'bg-blue-50', icon: Briefcase },
-  { id: 2, slug: 'salary-calculator', name: '실수령 계산기', color: 'text-purple-500', bg: 'bg-purple-50', icon: Wallet },
-  { id: 3, slug: 'target-amount-simulator', name: '목표금액 시뮬레이터', color: 'text-emerald-500', bg: 'bg-emerald-50', icon: Target },
-  { id: 4, slug: 'code-archive', name: '코드 아카이브', color: 'text-slate-700', bg: 'bg-slate-100', icon: Code },
+  { slug: 'salary-calculator', name: '실수령 계산기', color: 'text-purple-500', bg: 'bg-purple-50', icon: Wallet },
+  { slug: 'target-amount-simulator', name: '목표금액 시뮬레이터', color: 'text-emerald-500', bg: 'bg-emerald-50', icon: Target },
+  { slug: 'code-archive', name: '코드 아카이브', color: 'text-slate-700', bg: 'bg-slate-100', icon: Code },
 ];
 
 export default function HomePage() {
@@ -33,10 +32,10 @@ export default function HomePage() {
 
         {/* 프로젝트 버튼 그리드 (5열) */}
         <section className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-          {projects.map((project) => (
+          {projects.map((project, index) => (
             <Link
-              key={project.id}
-              href={project.slug === 'portfolio' ? '/portfolio' : `/tools/${project.slug}`}
+              key={project.slug}
+              href={`/tools/${project.slug}`}
               className="group relative flex flex-col items-center gap-3 sm:gap-4 p-4 sm:p-8 bg-white border border-gray-100 rounded-[2.5rem] transition-all duration-500 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.08)] hover:-translate-y-2 hover:border-blue-100 active:scale-95"
             >
               {/* 아이콘 영역 */}
@@ -46,7 +45,7 @@ export default function HomePage() {
 
               <div className="flex flex-col items-center gap-1">
                 <span className="text-xs font-bold text-gray-300 uppercase tracking-widest group-hover:text-blue-400 transition-colors">
-                  0{project.id}
+                  0{index + 1}
                 </span>
                 <span className="text-[13px] sm:text-[15px] font-black text-gray-800 tracking-tight group-hover:text-gray-950 text-center break-keep">
                   {project.name}
