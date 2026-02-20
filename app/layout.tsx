@@ -23,6 +23,7 @@ export const metadata: Metadata = {
     google: "ydxECgwPCCSU8vLbP6Wz2WdazvVMfgK3Yx1kN8LsfsQ",
     other: {
       "naver-site-verification": "28d29139dc4c618c1adcdcf418b8fc3162b7dede",
+      "google-adsense-account": "ca-pub-4390230382155372",
     },
   },
   openGraph: {
