@@ -193,6 +193,20 @@ export default function TargetAmountSimulator() {
               />
               <span className={styles.inputUnit}>원</span>
             </div>
+            <div className={styles.quickAddGroup}>
+              <button
+                className={styles.quickAddBtn}
+                onClick={() => setTargetAmount(prev => prev + 1000000)}
+              >+100만</button>
+              <button
+                className={styles.quickAddBtn}
+                onClick={() => setTargetAmount(prev => prev + 10000000)}
+              >+1000만</button>
+              <button
+                className={styles.quickAddBtn}
+                onClick={() => setTargetAmount(prev => prev + 100000000)}
+              >+1억</button>
+            </div>
           </div>
 
           <div className={styles.gridInputs}>

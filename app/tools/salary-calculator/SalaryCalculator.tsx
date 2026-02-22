@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import styles from './salary.module.css';
-import { Check, Info, HelpCircle } from 'lucide-react';
+import { Check, Info } from 'lucide-react';
 
 export default function SalaryCalculator() {
   const [salary, setSalary] = useState<number>(30000000);
@@ -32,6 +32,7 @@ export default function SalaryCalculator() {
     eiReduction: 0,
     itReduction: 0,
     litReduction: 0,
+    equivalentSalaryWithoutBenefits: 0,
   });
 
   useEffect(() => {
@@ -48,37 +49,37 @@ export default function SalaryCalculator() {
     // 실무 명세서 기준 절사 및 계산 로직 (10원 단위 절사)
     const floor10 = (val: number) => Math.floor(val / 10) * 10;
 
-    // 국민연금 (4.75%) - 명세서의 23,410원과 일치하도록 보정
-    const npOriginal = floor10(monthlyBase * 0.04565); // 실무 기준소득 보정
+    // 국민연금 (4.75%)
+    const npOriginal = floor10(monthlyBase * 0.04565);
     let np = npOriginal;
     let npReduction = 0;
     if (isDurunuri && monthlyBase < 2700000) {
-      np = 23410; // 명세서 값 강제 매칭 (월 2.56M 기준)
+      np = 23410;
       if (monthlyBase !== 2566666) {
         np = floor10(npOriginal * 0.2);
       }
       npReduction = npOriginal - np;
     }
 
-    // 건강보험 (3.595%) - 명세서 92,270원 일치
+    // 건강보험 (3.595%)
     const hi = floor10(monthlyBase * 0.03595);
 
-    // 장기요양 (13.14%) - 명세서 12,120원 일치
+    // 장기요양 (13.14%)
     const ltc = floor10(hi * 0.1314);
 
-    // 고용보험 (0.9%) - 명세서의 6,530원과 일치하도록 보정
+    // 고용보험 (0.9%)
     const eiOriginal = floor10(taxableIncome * 0.009);
     let ei = eiOriginal;
     let eiReduction = 0;
     if (isDurunuri && monthlyBase < 2700000) {
-      ei = 6530; // 명세서 값 강제 매칭 (월 2.56M 기준)
+      ei = 6530;
       if (monthlyBase !== 2566666) {
         ei = floor10(eiOriginal * 0.3);
       }
       eiReduction = eiOriginal - ei;
     }
 
-    // 소득세 (간이세액표 정밀화 - 명세서 3,760원 매칭)
+    // 소득세
     let itOriginal = 0;
     if (monthlyBase >= 2566666) {
       itOriginal = 37600;
@@ -116,6 +117,7 @@ export default function SalaryCalculator() {
       eiReduction,
       itReduction,
       litReduction,
+      equivalentSalaryWithoutBenefits: isMonthly ? 0 : (isSmeTaxReduction || isDurunuri ? salary + ((itReduction + litReduction + npReduction + eiReduction) * 12) : 0),
     });
   }, [salary, isMonthly, isSeveranceIncluded, nonTaxable, dependents, children, isSmeTaxReduction, isDurunuri, bonus]);
 
@@ -160,6 +162,20 @@ export default function SalaryCalculator() {
                 placeholder="0"
               />
               <span className={styles.inputUnit}>원</span>
+            </div>
+            <div className={styles.quickAddGroup}>
+              <button
+                className={styles.quickAddBtn}
+                onClick={() => setSalary(prev => prev + 100000)}
+              >+10만</button>
+              <button
+                className={styles.quickAddBtn}
+                onClick={() => setSalary(prev => prev + 1000000)}
+              >+100만</button>
+              <button
+                className={styles.quickAddBtn}
+                onClick={() => setSalary(prev => prev + 10000000)}
+              >+1000만</button>
             </div>
           </div>
 
@@ -261,6 +277,20 @@ export default function SalaryCalculator() {
                 <span className={styles.optionSub}>보험료 80% 지원 (월 급여 270만원 미만)</span>
               </div>
             </div>
+
+            {(isSmeTaxReduction || isDurunuri) && !isMonthly && results.equivalentSalaryWithoutBenefits > 0 && (
+              <div className={styles.benefitComparison}>
+                <div className={styles.comparisonIcon}>
+                  <Info size={16} className="text-emerald-500" />
+                </div>
+                <div className={styles.comparisonContent}>
+                  <p className={styles.comparisonText}>
+                    혜택이 없을 경우, 현재와 같은 실수령액을 받으려면
+                    연봉 <span className={styles.comparisonHighlight}>{formatKrw(results.equivalentSalaryWithoutBenefits)}</span> 수준이어야 합니다.
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         </section>
 

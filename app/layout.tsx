@@ -50,12 +50,14 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <head>
-        <Script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4390230382155372"
-          crossOrigin="anonymous"
-          strategy="beforeInteractive"
-        />
+        {process.env.NODE_ENV === "production" && (
+          <Script
+            async
+            src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4390230382155372"
+            crossOrigin="anonymous"
+            strategy="beforeInteractive"
+          />
+        )}
       </head>
       <ConditionalNavigation notoSansKrClassName={notoSansKr.className}>
         {children}

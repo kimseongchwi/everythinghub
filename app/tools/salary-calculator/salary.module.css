@@ -283,9 +283,11 @@
   margin-bottom: 1rem;
 }
 
-.optionItem:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04);
+@media (hover: hover) {
+  .optionItem:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04);
+  }
 }
 
 .optionItemActive {
@@ -422,5 +424,67 @@
   .toggleBtn {
     padding: 0.4rem 0.8rem;
     font-size: 0.75rem;
+  }
+}
+
+/* Benefit Comparison Tooltip/Notice */
+.benefitComparison {
+  display: flex;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 1.25rem;
+  margin-top: 1.5rem;
+  border: 1px solid #f1f5f9;
+}
+
+.comparisonIcon {
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
+.comparisonContent {
+  flex: 1;
+}
+
+.comparisonText {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.comparisonHighlight {
+  color: #10b981;
+  font-weight: 800;
+  font-size: 1rem;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-thickness: 2px;
+}
+
+.quickAddGroup {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.quickAddBtn {
+  padding: 0.5rem 0.875rem;
+  border-radius: 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  background: #f8fafc;
+  color: #64748b;
+  border: 1px solid #f1f5f9;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+@media (hover: hover) {
+  .quickAddBtn:hover {
+    background: #f1f5f9;
+    color: #10b981;
+    border-color: #10b981;
   }
 }
