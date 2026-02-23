@@ -3,6 +3,7 @@ import React from 'react';
 import { Metadata } from 'next';
 import SalaryCalculator from './SalaryCalculator';
 import FAQSection from '@/components/FAQSection';
+import ToolNavigation from '@/components/ToolNavigation';
 
 export const metadata: Metadata = {
   title: '2026 연봉 실수령액 계산기 | Everything Hub',
@@ -14,7 +15,9 @@ export default function SalaryCalculatorPage() {
   return (
     <div className="min-h-screen bg-white py-12 px-6">
       <div className="max-w-7xl mx-auto">
-        <header className="mb-20 text-center">
+        <ToolNavigation currentSlug="salary-calculator" />
+
+        <header className="mb-8 text-center">
           <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tighter mb-4">
             실수령 계산기
           </h1>

@@ -2,6 +2,7 @@
 import React from 'react';
 import { Metadata } from 'next';
 import CodeArchive from './CodeArchive';
+import ToolNavigation from '@/components/ToolNavigation';
 
 export const metadata: Metadata = {
   title: '코드 아카이브 | Everything Hub',
@@ -13,7 +14,9 @@ export default function CodeArchivePage() {
   return (
     <div className="min-h-screen bg-white py-12 px-6">
       <div className="max-w-7xl mx-auto">
-        <header className="mb-20 text-center">
+        <ToolNavigation currentSlug="code-archive" />
+
+        <header className="mb-8 text-center">
           <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tighter mb-4">
             코드 아카이브
           </h1>
