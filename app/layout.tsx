@@ -51,12 +51,30 @@ export default function RootLayout({
     <html lang="ko">
       <head>
         {process.env.NEXT_PUBLIC_VERCEL_ENV === "production" && (
-          <Script
-            async
-            src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4390230382155372"
-            crossOrigin="anonymous"
-            strategy="beforeInteractive"
-          />
+          <>
+            {/* Google Analytics (GA4) */}
+            <Script
+              src="https://www.googletagmanager.com/gtag/js?id=G-RCBD2XRTZH"
+              strategy="afterInteractive"
+            />
+            <Script id="google-analytics" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+
+                gtag('config', 'G-RCBD2XRTZH');
+              `}
+            </Script>
+
+            {/* Google AdSense */}
+            <Script
+              async
+              src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4390230382155372"
+              crossOrigin="anonymous"
+              strategy="beforeInteractive"
+            />
+          </>
         )}
       </head>
       <ConditionalNavigation notoSansKrClassName={notoSansKr.className}>
