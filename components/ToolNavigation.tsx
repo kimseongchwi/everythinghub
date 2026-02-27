@@ -25,16 +25,16 @@ const allTools = [
     hoverBorder: 'hover:border-emerald-300',
     icon: Target,
   },
-  {
-    slug: 'code-archive',
-    name: '코드 아카이브',
-    description: '자주 쓰는 코드 스니펫 모음',
-    color: 'text-slate-600',
-    bg: 'bg-slate-100',
-    border: 'border-slate-200',
-    hoverBorder: 'hover:border-slate-400',
-    icon: Code,
-  },
+  // {
+  //   slug: 'code-archive',
+  //   name: '코드 아카이브',
+  //   description: '자주 쓰는 코드 스니펫 모음',
+  //   color: 'text-slate-600',
+  //   bg: 'bg-slate-100',
+  //   border: 'border-slate-200',
+  //   hoverBorder: 'hover:border-slate-400',
+  //   icon: Code,
+  // },
 ];
 
 interface ToolNavigationProps {
