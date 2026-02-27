@@ -4,7 +4,7 @@ import { Wallet, Target, Code } from 'lucide-react';
 const projects = [
   { slug: 'salary-calculator', name: '실수령 계산기', color: 'text-purple-500', bg: 'bg-purple-50', icon: Wallet },
   { slug: 'target-amount-simulator', name: '목표금액 시뮬레이터', color: 'text-emerald-500', bg: 'bg-emerald-50', icon: Target },
-  { slug: 'code-archive', name: '코드 아카이브', color: 'text-slate-700', bg: 'bg-slate-100', icon: Code },
+  // { slug: 'code-archive', name: '코드 아카이브', color: 'text-slate-700', bg: 'bg-slate-100', icon: Code },
 ];
 
 export default function HomePage() {
