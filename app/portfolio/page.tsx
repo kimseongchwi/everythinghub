@@ -17,12 +17,14 @@ export default async function PortfolioPage() {
   try {
     certifications = await prisma.certification.findMany({
       orderBy: {
-        acquireDate: 'desc',
+        sortOrder: 'asc',
       },
+      include: {
+        attachment: true
+      }
     });
   } catch (error) {
     console.error('Failed to load certifications:', error);
-    // Fallback to empty array if DB is not ready
   }
 
   return (

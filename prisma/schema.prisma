@@ -16,20 +16,31 @@ datasource db {
 
 // 자격증 관리 테이블
 model Certification {
-  id          String    @id @default(uuid())
-  name        String // 자격증 명칭 (예: 정보처리산업기사, 정보처리기사)
-  issuer      String // 발급 기관 (예: 한국산업인력공단)
-  status      String // 상태 (취득완료, 준비중, 응시예정)
-  acquireDate DateTime? // 취득일 (준비 중일 땐 비워둠)
-  createdAt   DateTime  @default(now())
+  id          String   @id @default(uuid())
+  title       String   // 자격증 명칭
+  issuer      String   // 발급 기관
+  status      String   // 상태 (취득완료, 준비중 등)
+  acquiredAt  DateTime? // 취득일
+  sortOrder   Int      @default(0) // 정렬 순서
+  
+  // 첨부파일 관계
+  attachmentId String? @unique
+  attachment   Attachment? @relation(fields: [attachmentId], references: [id], onDelete: SetNull)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
-// 파일 관리 테이블 (Vercel Blob 연동)
-model Media {
-  id        String   @id @default(uuid())
-  filename  String
-  url       String
-  size      Int
-  mimeType  String
-  createdAt DateTime @default(now())
+// 첨부파일 관리 테이블
+model Attachment {
+  id           String   @id @default(uuid())
+  originalName String   // 원본 파일명
+  fileName     String   // 저장된 파일명
+  url          String   // 접근 URL
+  size         Int      // 용량
+  mimeType     String   // 형식
+  
+  certification Certification?
+  
+  createdAt    DateTime @default(now())
 }

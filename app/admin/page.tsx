@@ -16,7 +16,9 @@ import {
   Building,
   CheckCircle2,
   Clock,
-  UploadCloud
+  UploadCloud,
+  ChevronUp,
+  ChevronDown
 } from 'lucide-react';
 
 export default function AdminPage() {
@@ -26,12 +28,14 @@ export default function AdminPage() {
   const [certs, setCerts] = useState<any[]>([]);
   const [isAddingCert, setIsAddingCert] = useState(false);
   const [editingCertId, setEditingCertId] = useState<string | null>(null);
-  const [isUnknownDate, setIsUnknownDate] = useState(false);
   const [formData, setFormData] = useState({
-    name: '',
+    title: '',
     issuer: '',
     status: '취득완료',
-    acquireDate: ''
+    acquiredAt: '',
+    attachmentId: '',
+    fileUrl: '', // UI 표시용
+    sortOrder: 0
   });
 
   // Media state
@@ -39,76 +43,71 @@ export default function AdminPage() {
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Fetch data when tab changes
+  // Fetch data
   useEffect(() => {
     if (activeTab === 'portfolio') fetchCerts();
     if (activeTab === 'media') fetchMedia();
   }, [activeTab]);
 
-  // Cert Logic
   const fetchCerts = async () => {
-    const res = await fetch('/api/certifications');
+    const res = await fetch('/api/admin?target=certs');
     if (res.ok) {
       const data = await res.json();
       setCerts(data);
     }
   };
 
-  const handleCertSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const body = {
-      ...formData,
-      acquireDate: isUnknownDate ? null : formData.acquireDate,
-    };
-    const url = editingCertId ? `/api/certifications/${editingCertId}` : '/api/certifications';
-    const method = editingCertId ? 'PATCH' : 'POST';
-
-    const res = await fetch(url, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-
-    if (res.ok) {
-      setIsAddingCert(false);
-      setEditingCertId(null);
-      setFormData({ name: '', issuer: '', status: '취득완료', acquireDate: '' });
-      fetchCerts();
-    }
-  };
-
-  const handleCertDelete = async (id: string) => {
-    if (!confirm('정말로 삭제하시겠습니까?')) return;
-    const res = await fetch(`/api/certifications/${id}`, {
-      method: 'DELETE',
-    });
-    if (res.ok) fetchCerts();
-  };
-
-  // Media Logic
   const fetchMedia = async () => {
-    const res = await fetch('/api/media');
+    const res = await fetch('/api/admin?target=attachments');
     if (res.ok) {
       const data = await res.json();
       setMediaList(data);
     }
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCertSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const url = editingCertId ? `/api/admin?id=${editingCertId}` : '/api/admin?target=certs';
+    const method = editingCertId ? 'PATCH' : 'POST';
+
+    const res = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData),
+    });
+
+    if (res.ok) {
+      setIsAddingCert(false);
+      setEditingCertId(null);
+      setFormData({ title: '', issuer: '', status: '취득완료', acquiredAt: '', attachmentId: '', fileUrl: '', sortOrder: 0 });
+      fetchCerts();
+    }
+  };
+
+  const handleCertDelete = async (id: string) => {
+    if (!confirm('정말로 삭제하시겠습니까?')) return;
+    const res = await fetch(`/api/admin?target=certs&id=${id}`, { method: 'DELETE' });
+    if (res.ok) fetchCerts();
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, isForCert: boolean = false) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setIsUploading(true);
     try {
-      const response = await fetch(`/api/media?filename=${file.name}`, {
+      const response = await fetch(`/api/admin?target=attachments&filename=${file.name}`, {
         method: 'POST',
         body: file,
       });
 
       if (response.ok) {
-        fetchMedia();
-      } else {
-        alert('Upload failed');
+        const data = await response.json();
+        if (isForCert) {
+          setFormData(prev => ({ ...prev, attachmentId: data.id, fileUrl: data.url }));
+        } else {
+          fetchMedia();
+        }
       }
     } catch (error) {
       console.error(error);
@@ -118,65 +117,32 @@ export default function AdminPage() {
     }
   };
 
-  const handleMediaDelete = async (id: string) => {
-    if (!confirm('파일을 삭제하시겠습니까?')) return;
-    const res = await fetch(`/api/media/${id}`, {
-      method: 'DELETE',
-    });
-    if (res.ok) fetchMedia();
-  };
-
   return (
     <div className={styles.adminContainer}>
-      {/* Sidebar */}
       <aside className={styles.sidebar}>
         <div className={styles.logoContainer}>
-          <div className={styles.logoIcon}>
-            <LayoutDashboard size={24} />
-          </div>
+          <div className={styles.logoIcon}><LayoutDashboard size={24} /></div>
           <h2>Admin<span className={styles.logoAccent}>Panel</span></h2>
         </div>
-
         <div className={styles.navGroup}>
           <p className={styles.navLabel}>MENU</p>
           <nav className={styles.sidebarNav}>
-            <button
-              className={`${styles.navItem} ${activeTab === 'portfolio' ? styles.active : ''}`}
-              onClick={() => setActiveTab('portfolio')}
-            >
+            <button className={`${styles.navItem} ${activeTab === 'portfolio' ? styles.active : ''}`} onClick={() => setActiveTab('portfolio')}>
               <Award size={20} />
               <span>포트폴리오 관리</span>
             </button>
-            <button
-              className={`${styles.navItem} ${activeTab === 'media' ? styles.active : ''}`}
-              onClick={() => setActiveTab('media')}
-            >
+            <button className={`${styles.navItem} ${activeTab === 'media' ? styles.active : ''}`} onClick={() => setActiveTab('media')}>
               <ImageIcon size={20} />
-              <span>미디어/파일 관리</span>
+              <span>첨부파일 라이브러리</span>
             </button>
           </nav>
         </div>
       </aside>
 
-      {/* Main Content */}
       <main className={styles.mainContent}>
         <header className={styles.topHeader}>
           <div className={styles.pageTitle}>
-            <h1>
-              {activeTab === 'portfolio' ? '포트폴리오 관리' : '미디어 라이브러리'}
-            </h1>
-            <p className={styles.pageSubtitle}>
-              {activeTab === 'portfolio' ? '인증 및 자격증 리스트를 생성하고 관리하세요.' : '프로젝트에 사용할 이미지 및 파일을 업로드하세요.'}
-            </p>
-          </div>
-          <div className={styles.headerActions}>
-            <div className={styles.adminAvatar}>
-              A
-            </div>
-            <div className={styles.adminInfo}>
-              <span className={styles.adminName}>Administrator</span>
-              <span className={styles.adminRole}>Super Admin</span>
-            </div>
+            <h1>{activeTab === 'portfolio' ? '포트폴리오 관리' : '첨부파일 라이브러리'}</h1>
           </div>
         </header>
 
@@ -184,78 +150,56 @@ export default function AdminPage() {
           {activeTab === 'portfolio' && (
             <div className={styles.sectionCard}>
               <div className={styles.sectionHeader}>
-                <div className={styles.sectionTitleBlock}>
-                  <div className={styles.iconCircle}><Award size={20} /></div>
-                  <h3>자격증 목록</h3>
-                </div>
-                <button className={styles.primaryBtn} onClick={() => { setIsAddingCert(true); setEditingCertId(null); }}>
-                  <Plus size={18} />
-                  <span>새 자격증 추가</span>
+                <h3>자격증 목록</h3>
+                <button className={styles.primaryBtn} onClick={() => { setIsAddingCert(true); setEditingCertId(null); setFormData({ title: '', issuer: '', status: '취득완료', acquiredAt: '', attachmentId: '', fileUrl: '', sortOrder: certs.length }); }}>
+                  <Plus size={18} /><span>새 항목 추가</span>
                 </button>
               </div>
-
               <div className={styles.dataTable}>
                 <div className={styles.tableHeader}>
-                  <div className={styles.colName}>자격증명</div>
+                  <div className={styles.colName}>항목명</div>
                   <div className={styles.colIssuer}>발급기관</div>
                   <div className={styles.colStatus}>상태</div>
-                  <div className={styles.colDate}>취득일</div>
-                  <div className={styles.colActions}>액션</div>
+                  <div className={styles.colDate}>일자</div>
+                  <div className={styles.colFile}>파일</div>
+                  <div className={styles.colActions}>관리</div>
                 </div>
                 <div className={styles.tableBody}>
-                  {certs.length === 0 ? (
-                    <div className={styles.emptyState}>등록된 자격증이 없습니다.</div>
-                  ) : (
-                    certs.map((cert) => (
-                      <div key={cert.id} className={styles.tableRow}>
-                        <div className={styles.colName}>
-                          <span className={styles.recordTitle}>{cert.name}</span>
-                        </div>
-                        <div className={styles.colIssuer}>
-                          <span className={styles.recordSubtitle}>
-                            <Building size={14} /> {cert.issuer}
-                          </span>
-                        </div>
-                        <div className={styles.colStatus}>
-                          <span className={`${styles.statusBadge} ${cert.status === '취득완료' ? styles.statusSuccess : styles.statusPending}`}>
-                            {cert.status === '취득완료' ? <CheckCircle2 size={12} /> : <Clock size={12} />}
-                            {cert.status}
-                          </span>
-                        </div>
-                        <div className={styles.colDate}>
-                          <span className={styles.dateText}>
-                            <Calendar size={14} />
-                            {cert.acquireDate ? new Date(cert.acquireDate).toLocaleDateString() : '미상'}
-                          </span>
-                        </div>
-                        <div className={styles.colActions}>
-                          <button
-                            className={styles.iconBtnEdit}
-                            title="수정"
-                            onClick={() => {
-                              setIsAddingCert(true);
-                              setEditingCertId(cert.id);
-                              setFormData({
-                                name: cert.name,
-                                issuer: cert.issuer,
-                                status: cert.status,
-                                acquireDate: cert.acquireDate ? new Date(cert.acquireDate).toISOString().split('T')[0] : ''
-                              });
-                            }}
-                          >
-                            <Edit size={16} />
-                          </button>
-                          <button
-                            className={styles.iconBtnDelete}
-                            title="삭제"
-                            onClick={() => handleCertDelete(cert.id)}
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
+                  {certs.map((cert) => (
+                    <div key={cert.id} className={styles.tableRow}>
+                      <div className={styles.colName}>{cert.title}</div>
+                      <div className={styles.colIssuer}>{cert.issuer}</div>
+                      <div className={styles.colStatus}>
+                        <span className={`${styles.statusBadge} ${cert.status === '취득완료' ? styles.statusSuccess : styles.statusPending}`}>
+                          {cert.status}
+                        </span>
                       </div>
-                    ))
-                  )}
+                      <div className={styles.colDate}>{cert.acquiredAt ? new Date(cert.acquiredAt).toLocaleDateString() : '-'}</div>
+                      <div className={styles.colFile}>
+                        {cert.attachment?.url && (
+                          <a href={cert.attachment.url} target="_blank" rel="noopener noreferrer" className={styles.fileIconLink}>
+                            <FileIcon size={16} />
+                          </a>
+                        )}
+                      </div>
+                      <div className={styles.colActions}>
+                        <button onClick={() => {
+                          setIsAddingCert(true);
+                          setEditingCertId(cert.id);
+                          setFormData({
+                            title: cert.title,
+                            issuer: cert.issuer,
+                            status: cert.status,
+                            acquiredAt: cert.acquiredAt ? new Date(cert.acquiredAt).toISOString().split('T')[0] : '',
+                            attachmentId: cert.attachmentId || '',
+                            fileUrl: cert.attachment?.url || '',
+                            sortOrder: cert.sortOrder
+                          });
+                        }}><Edit size={16} /></button>
+                        <button onClick={() => handleCertDelete(cert.id)}><Trash2 size={16} /></button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -264,146 +208,86 @@ export default function AdminPage() {
           {activeTab === 'media' && (
             <div className={styles.sectionCard}>
               <div className={styles.sectionHeader}>
-                <div className={styles.sectionTitleBlock}>
-                  <div className={styles.iconCircleBlue}><ImageIcon size={20} /></div>
-                  <h3>업로드된 미디어</h3>
-                </div>
-                <button
-                  className={`${styles.primaryBtn} ${isUploading ? styles.uploadingState : ''}`}
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isUploading}
-                >
-                  {isUploading ? <span className={styles.spinner}></span> : <UploadCloud size={18} />}
-                  <span>{isUploading ? '업로드 중...' : '파일 업로드'}</span>
+                <h3>첨부파일 목록</h3>
+                <button className={styles.primaryBtn} onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
+                  <UploadCloud size={18} /><span>파일 업로드</span>
                 </button>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  style={{ display: 'none' }}
-                  onChange={handleFileUpload}
-                />
+                <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={(e) => handleFileUpload(e)} />
               </div>
-
-              {mediaList.length === 0 ? (
-                <div className={styles.emptyState}>
-                  <div className={styles.emptyIcon}><UploadCloud size={48} /></div>
-                  <h4>미디어가 없습니다</h4>
-                  <p>새 파일을 업로드하여 라이브러리를 채워보세요.</p>
-                </div>
-              ) : (
-                <div className={styles.mediaGrid}>
-                  {mediaList.map((item) => (
-                    <div key={item.id} className={styles.mediaCard}>
-                      <div className={styles.mediaThumb}>
-                        {item.mimeType.startsWith('image/') ? (
-                          <img src={item.url} alt={item.filename} />
-                        ) : (
-                          <div className={styles.docFileIcon}>
-                            <FileIcon size={40} />
-                          </div>
-                        )}
-                        <div className={styles.mediaOverlay}>
-                          <button
-                            onClick={() => handleMediaDelete(item.id)}
-                            className={styles.overlayDelBtn}
-                            title="삭제"
-                          >
-                            <Trash2 size={18} />
-                          </button>
-                        </div>
-                      </div>
-                      <div className={styles.mediaFooter}>
-                        <div className={styles.mediaInfo}>
-                          <span className={styles.mediaName} title={item.filename}>{item.filename}</span>
-                          <span className={styles.mediaMime}>{item.mimeType || 'Unknown format'}</span>
-                        </div>
-                        <button
-                          onClick={() => navigator.clipboard.writeText(item.url)}
-                          className={styles.copyBtn}
-                          title="URL 복사"
-                        >
-                          <Copy size={16} />
-                        </button>
+              <div className={styles.mediaGrid}>
+                {mediaList.map((item) => (
+                  <div key={item.id} className={styles.mediaCard}>
+                    <div className={styles.mediaThumb}>
+                      {item.mimeType.startsWith('image/') ? <img src={item.url} alt="" /> : <FileIcon size={40} />}
+                    </div>
+                    <div className={styles.mediaFooter}>
+                      <span className={styles.mediaName}>{decodeURIComponent(item.originalName)}</span>
+                      <div className={styles.mediaActions}>
+                        <button onClick={() => navigator.clipboard.writeText(item.url)}><Copy size={14} /></button>
+                        <button onClick={() => { if (confirm('삭제하시겠습니까?')) fetch(`/api/admin?target=attachments&id=${item.id}`, { method: 'DELETE' }).then(() => fetchMedia()) }}><Trash2 size={14} /></button>
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>
       </main>
 
-      {/* Modal - only show when isAddingCert is true */}
       {isAddingCert && (
         <div className={styles.modalBackdrop}>
           <div className={styles.modalBox}>
             <div className={styles.modalHeader}>
-              <h3>{editingCertId ? '자격증 수정' : '새 자격증 추가'}</h3>
-              <p>{editingCertId ? '기존 자격증 정보를 수정합니다.' : '포트폴리오에 추가할 정보를 입력해주세요.'}</p>
+              <h3>{editingCertId ? '항목 수정' : '새 항목 추가'}</h3>
             </div>
-
             <form onSubmit={handleCertSubmit} className={styles.formContainer}>
               <div className={styles.formGroup}>
-                <label>자격증 명칭</label>
-                <div className={styles.inputWrapper}>
-                  <div className={styles.inputIcon}><Award size={18} /></div>
-                  <input
-                    placeholder="예: 정보처리기사"
-                    value={formData.name}
-                    onChange={e => setFormData({ ...formData, name: e.target.value })}
-                    required
-                    className={styles.inputField}
-                  />
-                </div>
+                <label>항목 명칭</label>
+                <input value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} required className={styles.inputField} />
               </div>
-
               <div className={styles.formGroup}>
                 <label>발급 기관</label>
-                <div className={styles.inputWrapper}>
-                  <div className={styles.inputIcon}><Building size={18} /></div>
-                  <input
-                    placeholder="예: 한국산업인력공단"
-                    value={formData.issuer}
-                    onChange={e => setFormData({ ...formData, issuer: e.target.value })}
-                    required
-                    className={styles.inputField}
-                  />
-                </div>
+                <input value={formData.issuer} onChange={e => setFormData({ ...formData, issuer: e.target.value })} required className={styles.inputField} />
               </div>
-
               <div className={styles.formRow}>
                 <div className={styles.formGroup}>
                   <label>상태</label>
-                  <select
-                    value={formData.status}
-                    onChange={e => setFormData({ ...formData, status: e.target.value })}
-                    className={styles.selectField}
-                  >
+                  <select value={formData.status} onChange={e => setFormData({ ...formData, status: e.target.value })} className={styles.selectField}>
                     <option value="취득완료">취득완료</option>
                     <option value="준비중">준비중</option>
                   </select>
                 </div>
-
                 <div className={styles.formGroup}>
                   <label>취득일자</label>
                   <div className={styles.datePickerWrap}>
-                    <CustomDatePicker
-                      value={formData.acquireDate}
-                      onChange={(val: string) => setFormData({ ...formData, acquireDate: val })}
-                      label=""
-                    />
+                    <CustomDatePicker value={formData.acquiredAt} onChange={(val: string) => setFormData({ ...formData, acquiredAt: val })} label="" />
                   </div>
                 </div>
               </div>
-
+              <div className={styles.formGroup}>
+                <label>파일 첨부</label>
+                <div className={styles.fileUploadControl}>
+                  {formData.fileUrl ? (
+                    <div className={styles.fileAttached}>
+                      <span>{decodeURIComponent(formData.fileUrl.split('/').pop() || '')}</span>
+                      <button type="button" onClick={() => setFormData({ ...formData, fileUrl: '', attachmentId: '' })}><Trash2 size={14} /></button>
+                    </div>
+                  ) : (
+                    <button type="button" className={styles.attachBtn} onClick={() => {
+                      const input = document.createElement('input');
+                      input.type = 'file';
+                      input.onchange = (e: any) => handleFileUpload(e, true);
+                      input.click();
+                    }} disabled={isUploading}>
+                      {isUploading ? '업로드 중...' : '파일 선택'}
+                    </button>
+                  )}
+                </div>
+              </div>
               <div className={styles.modalActions}>
-                <button type="button" onClick={() => setIsAddingCert(false)} className={styles.secondaryBtn}>
-                  취소
-                </button>
-                <button type="submit" className={styles.primaryBtn}>
-                  {editingCertId ? '수정 사항 저장' : '자격증 등록'}
-                </button>
+                <button type="button" onClick={() => setIsAddingCert(false)} className={styles.secondaryBtn}>취소</button>
+                <button type="submit" className={styles.primaryBtn}>저장</button>
               </div>
             </form>
           </div>
