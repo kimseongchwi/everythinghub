@@ -7,7 +7,7 @@ import { portfolioData } from './data';
 
 export const metadata: Metadata = {
   title: '포트폴리오 | Everything Hub',
-  description: '김정휘의 개발 포트폴리오 및 자격증 현황을 확인해보세요.',
+  description: '김성취의 개발 포트폴리오 및 자격증 현황을 확인해보세요.',
   keywords: ['개발자 포트폴리오', '자격증', '데이터 엔지니어', 'Full Stack'],
 };
 
@@ -17,12 +17,14 @@ export default async function PortfolioPage() {
   try {
     certifications = await prisma.certification.findMany({
       orderBy: {
-        acquireDate: 'desc',
+        sortOrder: 'asc',
       },
+      include: {
+        attachment: true
+      }
     });
   } catch (error) {
     console.error('Failed to load certifications:', error);
-    // Fallback to empty array if DB is not ready
   }
 
   return (
