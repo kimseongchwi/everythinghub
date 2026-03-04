@@ -20,11 +20,6 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const password = request.headers.get('x-admin-password');
-    if (password !== process.env.ADMIN_PASSWORD) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const { searchParams } = new URL(request.url);
     const filename = searchParams.get('filename');
 
