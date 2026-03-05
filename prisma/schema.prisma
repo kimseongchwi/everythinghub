@@ -99,7 +99,7 @@ model Project {
   workExperienceId String?
   workExperience   WorkExperience? @relation(fields: [workExperienceId], references: [id], onDelete: Cascade)
 
-  // 관계: 개인 프로젝트인 경우 (또는 유저 소속)
+  // 관계: 사이드 프로젝트인 경우 (또는 유저 소속)
   userId String?
   user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
 

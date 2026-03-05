@@ -118,7 +118,7 @@ const Modal = ({ isOpen, onClose, title, children }: { isOpen: boolean, onClose:
 };
 
 export default function AdminPage() {
-  const [activeTab, setActiveTab] = useState('portfolio');
+  const [activeTab, setActiveTab] = useState('profile');
 
   // 프로필 정보 상태
   const [profile, setProfile] = useState({
@@ -181,6 +181,20 @@ export default function AdminPage() {
     sortOrder: 0
   });
 
+  // 사이드 프로젝트 관리 상태
+  const [isAddingProject, setIsAddingProject] = useState(false);
+  const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
+  const [projectFormData, setProjectFormData] = useState({
+    title: '',
+    description: '',
+    techStack: '',
+    githubUrl: '',
+    demoUrl: '',
+    sortOrder: 0,
+    thumbnailId: '',
+    fileUrl: ''
+  });
+
   // 미디어 관리 상태 (파일)
   const [mediaList, setMediaList] = useState<any[]>([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -203,11 +217,11 @@ export default function AdminPage() {
   }, []);
 
   useEffect(() => {
-    if (activeTab === 'portfolio' && profile.id) {
-      fetchTechStacks();
-      fetchCerts();
-      fetchWorkExperience();
-      fetchProjects();
+    if (profile.id) {
+      if (activeTab === 'tech') fetchTechStacks();
+      if (activeTab === 'cert') fetchCerts();
+      if (activeTab === 'work') fetchWorkExperience();
+      if (activeTab === 'side') fetchProjects();
     }
     if (activeTab === 'media') fetchMedia();
   }, [activeTab, profile.id]);
@@ -444,13 +458,65 @@ export default function AdminPage() {
   };
 
   const handleWorkDelete = async (id: string) => {
-    if (!confirm('정말로 이 경력 정보를 삭제하시겠습니까?')) return;
-    const res = await fetch(`/api/admin?target=work&id=${id}`, { method: 'DELETE' });
-    if (res.ok) {
-      alert('삭제되었습니다.');
-      fetchWorkExperience();
-    } else {
-      alert('삭제에 실패했습니다.');
+    if (!confirm('정말로 삭제하시겠습니까?')) return;
+    try {
+      const res = await fetch(`/api/admin?target=work&id=${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        fetchWorkExperience();
+      }
+    } catch (error) {
+      console.error('삭제 오류:', error);
+    }
+  };
+
+  // 사이드 프로젝트 핸들러
+  const handleProjectSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsUploading(true);
+    try {
+      const method = editingProjectId ? 'PATCH' : 'POST';
+      const url = editingProjectId ? `/api/admin?target=projects&id=${editingProjectId}` : '/api/admin?target=projects';
+
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(projectFormData)
+      });
+
+      if (res.ok) {
+        setIsAddingProject(false);
+        fetchProjects();
+        alert(editingProjectId ? '프로젝트가 수정되었습니다.' : '프로젝트가 등록되었습니다.');
+      }
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleProjectEdit = (proj: any) => {
+    setEditingProjectId(proj.id);
+    setProjectFormData({
+      title: proj.title,
+      description: proj.description || '',
+      techStack: Array.isArray(proj.techStack) ? proj.techStack.join(', ') : (proj.techStack || ''),
+      githubUrl: proj.githubLink || '',
+      demoUrl: proj.demoLink || '',
+      sortOrder: proj.sortOrder,
+      thumbnailId: proj.thumbnailId || '',
+      fileUrl: proj.thumbnail?.url || ''
+    });
+    setIsAddingProject(true);
+  };
+
+  const handleProjectDelete = async (id: string) => {
+    if (!confirm('정말로 삭제하시겠습니까?')) return;
+    try {
+      const res = await fetch(`/api/admin?target=projects&id=${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        fetchProjects();
+      }
+    } catch (error) {
+      console.error('삭제 오류:', error);
     }
   };
 
@@ -496,7 +562,7 @@ export default function AdminPage() {
       setProfile(prev => ({ ...prev, avatarUrl: reader.result as string }));
       setPendingAvatarFile(file);
 
-      alert(`프로필 이미지가 ${isChange ? '변경' : '추가'}되었습니다. \n최종 [전체 프로필 ${profile.id ? '수정' : '저장'}] 버튼을 눌러야 반영됩니다.`);
+      alert(`프로필 이미지가 ${isChange ? '변경' : '추가'}되었습니다. \n최종 [프로필 ${profile.id ? '수정' : '저장'}] 버튼을 눌러야 반영됩니다.`);
     };
     reader.readAsDataURL(file);
 
@@ -564,13 +630,41 @@ export default function AdminPage() {
         </div>
 
         <div className={styles.navSection}>
-          <label>Manage</label>
+          <label>Portfolio</label>
           <button
-            className={`${styles.navButton} ${activeTab === 'portfolio' ? styles.active : ''}`}
-            onClick={() => setActiveTab('portfolio')}
+            className={`${styles.navButton} ${activeTab === 'profile' ? styles.active : ''}`}
+            onClick={() => setActiveTab('profile')}
           >
-            <User size={18} /> <span>포트폴리오 관리</span>
+            <User size={18} /> <span>프로필 관리</span>
           </button>
+          <button
+            className={`${styles.navButton} ${activeTab === 'tech' ? styles.active : ''}`}
+            onClick={() => setActiveTab('tech')}
+          >
+            <Code2 size={18} /> <span>기술스택 관리</span>
+          </button>
+          <button
+            className={`${styles.navButton} ${activeTab === 'work' ? styles.active : ''}`}
+            onClick={() => setActiveTab('work')}
+          >
+            <Briefcase size={18} /> <span>근무경력 관리</span>
+          </button>
+          <button
+            className={`${styles.navButton} ${activeTab === 'side' ? styles.active : ''}`}
+            onClick={() => setActiveTab('side')}
+          >
+            <FolderOpen size={18} /> <span>사이드 프로젝트 관리</span>
+          </button>
+          <button
+            className={`${styles.navButton} ${activeTab === 'cert' ? styles.active : ''}`}
+            onClick={() => setActiveTab('cert')}
+          >
+            <Award size={18} /> <span>자격증 및 수상 관리</span>
+          </button>
+        </div>
+
+        <div className={`${styles.navSection} mt-4`}>
+          <label>Assets</label>
           <button
             className={`${styles.navButton} ${activeTab === 'media' ? styles.active : ''}`}
             onClick={() => setActiveTab('media')}
@@ -606,554 +700,567 @@ export default function AdminPage() {
       <main className={styles.mainLayout}>
         <header className={styles.pageHeader}>
           <div className={styles.titleGroup}>
-            <h1>{activeTab === 'portfolio' ? '포트폴리오 관리' : '전체 파일 관리'}</h1>
+            <h1>
+              {activeTab === 'profile' ? '프로필 관리' :
+                activeTab === 'tech' ? '기술스택 관리' :
+                  activeTab === 'work' ? '근무경력 관리' :
+                    activeTab === 'side' ? '사이드 프로젝트 관리' :
+                      activeTab === 'cert' ? '자격증 및 수상 관리' : '전체 파일 관리'}
+            </h1>
             <p>
-              {activeTab === 'portfolio'
-                ? '프로필 정보와 핵심 역량을 최신 상태로 관리하세요.'
-                : '서버에 저장된 모든 미디어 및 첨부 파일을 관리합니다.'}
+              {activeTab === 'media'
+                ? '서버에 저장된 모든 미디어 및 첨부 파일을 관리합니다.'
+                : '프로필 정보와 핵심 역량을 최신 상태로 관리하세요.'}
             </p>
           </div>
         </header>
 
-        {activeTab === 'portfolio' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-
-            {/* 1. 프로필 관리 */}
-            <div className={styles.contentCard}>
-              <div className={styles.cardTop}>
-                <div className="flex items-center gap-2">
-                  <User size={18} className="text-blue-500" />
-                  <h3 className="font-bold">프로필 통합 관리</h3>
-                </div>
-                <button
-                  className={styles.btnPrimary}
-                  style={{ background: '#3b82f6', padding: '6px 16px', fontSize: '0.85rem' }}
-                  onClick={handleProfileSave}
-                  disabled={isUploading}
-                >
-                  {isUploading ? (
-                    <Loader2 size={14} className="animate-spin" />
-                  ) : (
-                    <Save size={14} />
-                  )}
-                  {" "}
-                  {isUploading
-                    ? (profile.id ? '수정 중...' : '저장 중...')
-                    : (profile.id ? '전체 프로필 수정' : '전체 프로필 저장')
-                  }
-                </button>
+        {activeTab === 'profile' && (
+          <div className={styles.contentCard}>
+            <div className={styles.cardTop}>
+              <div className="flex items-center gap-2">
+                <User size={18} className="text-blue-500" />
+                <h3 className="font-bold">프로필 관리</h3>
               </div>
-
-              <div style={{ padding: '32px', display: 'flex', gap: '40px' }}>
-                {/* 좌측: 프로필 이미지 */}
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
-                  <div style={{
-                    width: '140px',
-                    height: '140px',
-                    borderRadius: '24px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    border: '1px solid #cccccc',
-                    overflow: 'hidden',
-                    position: 'relative'
-                  }}>
-                    {profile.avatarUrl ? (
-                      <img src={profile.avatarUrl} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    ) : (
-                      <div className="flex flex-col items-center text-gray-400">
-                        <User size={40} />
-                        <span style={{ fontSize: '0.65rem', fontWeight: 800, marginTop: '8px' }}>PROFILE</span>
-                      </div>
-                    )}
-                  </div>
-                  <input
-                    type="file"
-                    ref={profileFileInputRef}
-                    style={{ display: 'none' }}
-                    accept="image/*"
-                    onChange={handleProfileAvatarUpload}
-                  />
-                  <button
-                    className={styles.btnIcon}
-                    style={{ fontSize: '0.75rem', fontWeight: 700, width: '100%' }}
-                    onClick={() => profileFileInputRef.current?.click()}
-                    disabled={isUploading}
-                  >
-                    {isUploading ? '업로드 중...' : '이미지 변경'}
-                  </button>
-                </div>
-
-                {/* 우측: 상세 정보 입력 */}
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                  <div className="grid grid-cols-2 gap-4" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                    <div className={styles.field}>
-                      <label>이름</label>
-                      <input className={styles.input} value={profile.name} onChange={e => setProfile({ ...profile, name: e.target.value })} />
-                    </div>
-                    <div className={styles.field}>
-                      <label>희망 직무 / 포지션</label>
-                      <input className={styles.input} placeholder="예: Full-Stack Developer" value={profile.position} onChange={e => setProfile({ ...profile, position: e.target.value })} />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                    <div className={styles.field}>
-                      <label>이메일</label>
-                      <input className={styles.input} value={profile.email} onChange={e => setProfile({ ...profile, email: e.target.value })} />
-                    </div>
-                    <div className={styles.field}>
-                      <label>전화번호</label>
-                      <input className={styles.input} value={profile.phone} onChange={e => setProfile({ ...profile, phone: e.target.value })} />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-4" style={{ display: 'grid', gridTemplateColumns: '1.2fr 1.2fr 1fr', gap: '16px' }}>
-                    <div className={styles.field}>
-                      <label className="flex items-center gap-2"><GraduationCap size={14} /> 학교</label>
-                      <input className={styles.input} placeholder="예: 명지전문대학" value={profile.school} onChange={(e) => setProfile({ ...profile, school: e.target.value })} />
-                    </div>
-                    <div className={styles.field}>
-                      <label>전공(학과)</label>
-                      <input className={styles.input} placeholder="예: 정보통신공학과" value={profile.major} onChange={(e) => setProfile({ ...profile, major: e.target.value })} />
-                    </div>
-                    <div className={styles.field}>
-                      <label>학위 상태</label>
-                      <select
-                        className={styles.select}
-                        value={profile.degreeStatus}
-                        onChange={(e) => setProfile({ ...profile, degreeStatus: e.target.value })}
-                      >
-                        <option value="">선택하세요</option>
-                        <option value="학사">학사</option>
-                        <option value="전문학사">전문학사</option>
-                        <option value="석사">석사</option>
-                        <option value="박사">박사</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                    <div className={styles.field}>
-                      <label>재학 시작 (입학일)</label>
-                      <input
-                        type="text"
-                        className={styles.input}
-                        placeholder="예: 2020.03"
-                        value={profile.startDate}
-                        onChange={(e) => setProfile({ ...profile, startDate: e.target.value })}
-                      />
-                    </div>
-                    <div className={styles.field}>
-                      <label>재학 종료 (졸업일)</label>
-                      <input
-                        type="text"
-                        className={styles.input}
-                        placeholder="예: 2024.02"
-                        value={profile.endDate}
-                        onChange={(e) => setProfile({ ...profile, endDate: e.target.value })}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                    <div className={styles.field}>
-                      <label className="flex items-center gap-2"><Github size={14} /> Github URL</label>
-                      <input className={styles.input} value={profile.github} onChange={(e) => setProfile({ ...profile, github: e.target.value })} />
-                    </div>
-                    <div className={styles.field}>
-                      <label className="flex items-center gap-2"><ImageIcon size={14} /> Notion URL</label>
-                      <input className={styles.input} value={profile.notion} onChange={(e) => setProfile({ ...profile, notion: e.target.value })} />
-                    </div>
-                  </div>
-
-                  <div className={styles.field}>
-                    <label>인사말</label>
-                    <textarea
-                      className={styles.input}
-                      style={{ minHeight: '80px', resize: 'none' }}
-                      value={profile.intro}
-                      onChange={e => setProfile({ ...profile, intro: e.target.value })}
-                      placeholder="자신을 한 줄로 표현해 보세요."
-                    />
-                  </div>
-                </div>
-              </div>
+              <button
+                className={styles.btnPrimary}
+                style={{ background: '#3b82f6', padding: '6px 16px', fontSize: '0.85rem' }}
+                onClick={handleProfileSave}
+                disabled={isUploading}
+              >
+                {isUploading ? (
+                  <Loader2 size={14} className="animate-spin" />
+                ) : (
+                  <Save size={14} />
+                )}
+                {" "}
+                {isUploading
+                  ? (profile.id ? '수정 중...' : '저장 중...')
+                  : (profile.id ? '프로필 수정' : '프로필 저장')
+                }
+              </button>
             </div>
 
-            {/* 프로필 로딩 중이면 로딩 표시, 완료 후 존재 여부에 따라 분기 */}
-            {loadingStates.profile ? (
-              <div className={styles.contentCard} style={{ padding: '60px' }}>
-                <LoadingState />
-              </div>
-            ) : profile.id ? (
-              <>
-                {/* 2. 기술 스택 관리 */}
-                <div className={styles.contentCard}>
-                  <div className={styles.cardTop}>
-                    <div className="flex items-center gap-2">
-                      <Code2 size={18} className="text-cyan-500" />
-                      <h3 className="font-bold">기술 스택 (Tool & Skill)</h3>
+            <div style={{ padding: '32px' }}>
+              {loadingStates.profile ? (
+                <div style={{ padding: '40px 0' }}>
+                  <LoadingState />
+                </div>
+              ) : (
+                <div style={{ display: 'flex', gap: '40px' }}>
+                  {/* 좌측: 프로필 이미지 */}
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+                    <div style={{
+                      width: '140px',
+                      height: '140px',
+                      borderRadius: '24px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      border: '1px solid #cccccc',
+                      overflow: 'hidden',
+                      position: 'relative'
+                    }}>
+                      {profile.avatarUrl ? (
+                        <img src={profile.avatarUrl} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      ) : (
+                        <div className="flex flex-col items-center text-gray-400">
+                          <User size={40} />
+                          <span style={{ fontSize: '0.65rem', fontWeight: 800, marginTop: '8px' }}>PROFILE</span>
+                        </div>
+                      )}
                     </div>
+                    <input
+                      type="file"
+                      ref={profileFileInputRef}
+                      style={{ display: 'none' }}
+                      accept="image/*"
+                      onChange={handleProfileAvatarUpload}
+                    />
                     <button
-                      className={styles.btnPrimary}
-                      style={{ padding: '6px 14px', fontSize: '0.8rem' }}
-                      onClick={() => {
+                      className={styles.btnIcon}
+                      style={{ fontSize: '0.75rem', fontWeight: 700, width: '100%' }}
+                      onClick={() => profileFileInputRef.current?.click()}
+                      disabled={isUploading}
+                    >
+                      {isUploading ? '업로드 중...' : '이미지 변경'}
+                    </button>
+                  </div>
+
+                  {/* 우측: 상세 정보 입력 */}
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <div className="grid grid-cols-2 gap-4" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                      <div className={styles.field}>
+                        <label>이름</label>
+                        <input className={styles.input} value={profile.name} onChange={e => setProfile({ ...profile, name: e.target.value })} />
+                      </div>
+                      <div className={styles.field}>
+                        <label>희망 직무 / 포지션</label>
+                        <input className={styles.input} placeholder="예: Full-Stack Developer" value={profile.position} onChange={e => setProfile({ ...profile, position: e.target.value })} />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                      <div className={styles.field}>
+                        <label>이메일</label>
+                        <input className={styles.input} value={profile.email} onChange={e => setProfile({ ...profile, email: e.target.value })} />
+                      </div>
+                      <div className={styles.field}>
+                        <label>전화번호</label>
+                        <input className={styles.input} value={profile.phone} onChange={e => setProfile({ ...profile, phone: e.target.value })} />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-4" style={{ display: 'grid', gridTemplateColumns: '1.2fr 1.2fr 1fr', gap: '16px' }}>
+                      <div className={styles.field}>
+                        <label className="flex items-center gap-2"><GraduationCap size={14} /> 학교</label>
+                        <input className={styles.input} placeholder="예: 명지전문대학" value={profile.school} onChange={(e) => setProfile({ ...profile, school: e.target.value })} />
+                      </div>
+                      <div className={styles.field}>
+                        <label>전공(학과)</label>
+                        <input className={styles.input} placeholder="예: 정보통신공학과" value={profile.major} onChange={(e) => setProfile({ ...profile, major: e.target.value })} />
+                      </div>
+                      <div className={styles.field}>
+                        <label>학위 상태</label>
+                        <select
+                          className={styles.select}
+                          value={profile.degreeStatus}
+                          onChange={(e) => setProfile({ ...profile, degreeStatus: e.target.value })}
+                        >
+                          <option value="">선택하세요</option>
+                          <option value="학사">학사</option>
+                          <option value="전문학사">전문학사</option>
+                          <option value="석사">석사</option>
+                          <option value="박사">박사</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                      <div className={styles.field}>
+                        <label>재학 시작 (입학일)</label>
+                        <input
+                          type="text"
+                          className={styles.input}
+                          placeholder="예: 2020.03"
+                          value={profile.startDate}
+                          onChange={(e) => setProfile({ ...profile, startDate: e.target.value })}
+                        />
+                      </div>
+                      <div className={styles.field}>
+                        <label>재학 종료 (졸업일)</label>
+                        <input
+                          type="text"
+                          className={styles.input}
+                          placeholder="예: 2024.02"
+                          value={profile.endDate}
+                          onChange={(e) => setProfile({ ...profile, endDate: e.target.value })}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                      <div className={styles.field}>
+                        <label className="flex items-center gap-2"><Github size={14} /> Github URL</label>
+                        <input className={styles.input} value={profile.github} onChange={(e) => setProfile({ ...profile, github: e.target.value })} />
+                      </div>
+                      <div className={styles.field}>
+                        <label className="flex items-center gap-2"><ImageIcon size={14} /> Notion URL</label>
+                        <input className={styles.input} value={profile.notion} onChange={(e) => setProfile({ ...profile, notion: e.target.value })} />
+                      </div>
+                    </div>
+
+                    <div className={styles.field}>
+                      <label>인사말</label>
+                      <textarea
+                        className={styles.input}
+                        style={{ minHeight: '80px', resize: 'none' }}
+                        value={profile.intro}
+                        onChange={e => setProfile({ ...profile, intro: e.target.value })}
+                        placeholder="자신을 한 줄로 표현해 보세요."
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* 프로필이 없는 경우 안내 (기술스택, 경력, 프로젝트, 자격증 접근 시) */}
+        {['tech', 'work', 'side', 'cert'].includes(activeTab) && !profile.id && !loadingStates.profile && (
+          <div className={styles.contentCard} style={{ padding: '80px 40px', textAlign: 'center' }}>
+            <p style={{ color: '#64748b', fontSize: '1rem', fontWeight: 600 }}>
+              프로필 정보를 먼저 입력하고 저장해 주세요.<br />
+              프로필이 생성된 후에 각 항목 관리가 가능합니다.
+            </p>
+          </div>
+        )}
+
+        {/* 2. 기술 스택 관리 */}
+        {activeTab === 'tech' && profile.id && (
+          <div className={styles.contentCard}>
+            <div className={styles.cardTop}>
+              <div className="flex items-center gap-2">
+                <Code2 size={18} className="text-cyan-500" />
+                <h3 className="font-bold">기술 스택 (Tool & Skill)</h3>
+              </div>
+              <button
+                className={styles.btnPrimary}
+                style={{ padding: '6px 14px', fontSize: '0.8rem' }}
+                onClick={() => {
+                  setIsAddingTech(true);
+                  setEditingTechId(null);
+                  setTechFormData({ name: '', category: 'Frontend', description: '', sortOrder: techStacks.length });
+                }}
+              >
+                <Plus size={14} /> 기술 스택 등록
+              </button>
+            </div>
+            <div style={{ padding: '24px' }}>
+              {loadingStates.tech ? <LoadingState /> : (
+                <div className="flex flex-col gap-10" style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+                  {techStacks.length > 0 ? (
+                    categories.map(cat => {
+                      const stacksInCat = techStacks.filter(s => s.category === cat);
+                      if (stacksInCat.length === 0) return null;
+
+                      return (
+                        <div key={cat}>
+                          <div className="flex items-center gap-2 mb-4" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+                            <span style={{ width: '4px', height: '16px', background: '#000', borderRadius: '2px' }}></span>
+                            <h4 style={{ fontSize: '0.9rem', fontWeight: 900, color: '#111', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{cat}</h4>
+                            <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 500 }}>({stacksInCat.length})</span>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-4" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                            {stacksInCat.map(stack => (
+                              <div key={stack.id} className="flex items-center gap-4 p-4 border border-gray-100 rounded-xl bg-gray-50/50 hover:border-blue-100 transition-all" style={{ display: 'flex', alignItems: 'center', gap: '20px', padding: '16px', border: '1px solid #f1f5f9', borderRadius: '12px', background: '#f8fafc' }}>
+                                <div style={{ flex: 1 }}>
+                                  <div className="flex items-center gap-2 mb-1" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                                    <span className="font-bold text-[0.95rem]" style={{ fontWeight: 800, fontSize: '0.95rem' }}>{stack.name}</span>
+                                  </div>
+                                  <p className="text-sm text-gray-500" style={{ fontSize: '0.8rem', color: '#64748b' }}>{stack.description}</p>
+                                </div>
+                                <div style={{ display: 'flex', gap: '4px' }}>
+                                  <button
+                                    className={styles.btnIcon}
+                                    style={{ padding: '4px' }}
+                                    onClick={() => handleTechEdit(stack)}
+                                  >
+                                    <Edit size={12} />
+                                  </button>
+                                  <button
+                                    className={styles.btnIcon}
+                                    style={{ padding: '4px' }}
+                                    onClick={() => handleTechDelete(stack.id)}
+                                  >
+                                    <Trash2 size={12} />
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <EmptyState
+                      message="아직 등록된 기술 스택이 없습니다."
+                      onAdd={() => {
                         setIsAddingTech(true);
                         setEditingTechId(null);
                         setTechFormData({ name: '', category: 'Frontend', description: '', sortOrder: techStacks.length });
                       }}
-                    >
-                      <Plus size={14} /> 기술 스택 등록
-                    </button>
-                  </div>
-                  <div style={{ padding: '24px' }}>
-                    {loadingStates.tech ? <LoadingState /> : (
-                      <div className="flex flex-col gap-10" style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-                        {techStacks.length > 0 ? (
-                          categories.map(cat => {
-                            const stacksInCat = techStacks.filter(s => s.category === cat);
-                            if (stacksInCat.length === 0) return null;
-
-                            return (
-                              <div key={cat}>
-                                <div className="flex items-center gap-2 mb-4" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-                                  <span style={{ width: '4px', height: '16px', background: '#000', borderRadius: '2px' }}></span>
-                                  <h4 style={{ fontSize: '0.9rem', fontWeight: 900, color: '#111', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{cat}</h4>
-                                  <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 500 }}>({stacksInCat.length})</span>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                                  {stacksInCat.map(stack => (
-                                    <div key={stack.id} className="flex items-center gap-4 p-4 border border-gray-100 rounded-xl bg-gray-50/50 hover:border-blue-100 transition-all" style={{ display: 'flex', alignItems: 'center', gap: '20px', padding: '16px', border: '1px solid #f1f5f9', borderRadius: '12px', background: '#f8fafc' }}>
-                                      <div style={{ flex: 1 }}>
-                                        <div className="flex items-center gap-2 mb-1" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                                          <span className="font-bold text-[0.95rem]" style={{ fontWeight: 800, fontSize: '0.95rem' }}>{stack.name}</span>
-                                        </div>
-                                        <p className="text-sm text-gray-500" style={{ fontSize: '0.8rem', color: '#64748b' }}>{stack.description}</p>
-                                      </div>
-                                      <div style={{ display: 'flex', gap: '4px' }}>
-                                        <button
-                                          className={styles.btnIcon}
-                                          style={{ padding: '4px' }}
-                                          onClick={() => handleTechEdit(stack)}
-                                        >
-                                          <Edit size={12} />
-                                        </button>
-                                        <button
-                                          className={styles.btnIcon}
-                                          style={{ padding: '4px' }}
-                                          onClick={() => handleTechDelete(stack.id)}
-                                        >
-                                          <Trash2 size={12} />
-                                        </button>
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            );
-                          })
-                        ) : (
-                          <EmptyState
-                            message="아직 등록된 기술 스택이 없습니다."
-                            onAdd={() => {
-                              setIsAddingTech(true);
-                              setEditingTechId(null);
-                              setTechFormData({ name: '', category: 'Frontend', description: '', sortOrder: techStacks.length });
-                            }}
-                          />
-                        )}
-                      </div>
-                    )}
-                  </div>
+                    />
+                  )}
                 </div>
+              )}
+            </div>
+          </div>
+        )}
 
-                {/* 3. 경력 및 프로젝트 관리 */}
-                <div className={styles.contentCard}>
-                  <div className={styles.cardTop}>
-                    <div className="flex items-center gap-2">
-                      <Briefcase size={18} className="text-orange-500" />
-                      <h3 className="font-bold">근무 경력 및 프로젝트</h3>
-                    </div>
-                    <button
-                      className={styles.btnPrimary}
-                      style={{ padding: '6px 14px', fontSize: '0.8rem' }}
-                      onClick={() => {
-                        setEditingWorkId(null);
-                        setWorkFormData({ companyName: '', role: '', startDate: '', endDate: '', isCurrent: false, summary: '', description: '', sortOrder: workExperiences.length });
-                        setIsAddingWork(true);
-                      }}
-                    >
-                      <Plus size={14} /> 경력 정보 등록
-                    </button>
-                  </div>
-                  <div style={{ padding: '24px' }}>
-                    {loadingStates.work ? <LoadingState /> : (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                        {workExperiences.map(work => (
-                          <div key={work.id} className="p-6 bg-gray-50 rounded-xl border border-gray-100" style={{ padding: '24px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #f1f5f9' }}>
-                            <div className="flex justify-between items-start mb-6" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
-                              <div>
-                                <h4 className="text-lg font-black" style={{ fontSize: '1.2rem', fontWeight: 900 }}>{work.companyName}</h4>
-                                <p className="text-sm text-gray-500" style={{ fontSize: '0.85rem', color: '#64748b' }}>
-                                  {work.startDate} - {work.endDate || '현재'} | {work.role}
-                                </p>
-                              </div>
-                              <div className="flex gap-2" style={{ display: 'flex', gap: '8px' }}>
-                                <button className={styles.btnIcon} onClick={() => handleWorkEdit(work)}><Edit size={14} /></button>
-                                <button className={styles.btnIcon} onClick={() => handleWorkDelete(work.id)}><Trash2 size={14} /></button>
-                              </div>
-                            </div>
+        {/* 3. 경력 관리 */}
+        {activeTab === 'work' && profile.id && (
+          <div className={styles.contentCard}>
+            <div className={styles.cardTop}>
+              <div className="flex items-center gap-2">
+                <Briefcase size={18} className="text-orange-500" />
+                <h3 className="font-bold">경력 관리</h3>
+              </div>
+              <button
+                className={styles.btnPrimary}
+                style={{ padding: '6px 14px', fontSize: '0.8rem' }}
+                onClick={() => {
+                  setEditingWorkId(null);
+                  setWorkFormData({ companyName: '', role: '', startDate: '', endDate: '', isCurrent: false, summary: '', description: '', sortOrder: workExperiences.length });
+                  setIsAddingWork(true);
+                }}
+              >
+                <Plus size={14} /> 경력 정보 등록
+              </button>
+            </div>
+            <div style={{ padding: '24px' }}>
+              {loadingStates.work ? <LoadingState /> : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  {workExperiences.map(work => (
+                    <div key={work.id} className="p-6 bg-gray-50 rounded-xl border border-gray-100" style={{ padding: '24px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #f1f5f9' }}>
+                      <div className="flex justify-between items-start mb-6" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
+                        <div>
+                          <h4 className="text-lg font-black" style={{ fontSize: '1.2rem', fontWeight: 900 }}>{work.companyName}</h4>
+                          <p className="text-sm text-gray-500" style={{ fontSize: '0.85rem', color: '#64748b' }}>
+                            {work.startDate} - {work.endDate || '현재'} | {work.role}
+                          </p>
+                        </div>
+                        <div className="flex gap-2" style={{ display: 'flex', gap: '8px' }}>
+                          <button className={styles.btnIcon} onClick={() => handleWorkEdit(work)}><Edit size={14} /></button>
+                          <button className={styles.btnIcon} onClick={() => handleWorkDelete(work.id)}><Trash2 size={14} /></button>
+                        </div>
+                      </div>
 
-                            <div className="grid grid-cols-2 gap-4" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                              {work.projects?.map((proj: any) => (
-                                <div key={proj.id} className="p-4 bg-white border border-gray-100 rounded-lg shadow-sm flex items-center gap-4" style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: '#fff', border: '1px solid #f1f5f9', borderRadius: '8px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
-                                  <div className="w-10 h-10 bg-blue-50 text-blue-600 flex items-center justify-center rounded-lg" style={{ width: '40px', height: '40px', background: '#eff6ff', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px' }}><Cpu size={20} /></div>
-                                  <div style={{ flex: 1 }}>
-                                    <p className="font-bold text-sm" style={{ fontWeight: 700, fontSize: '0.9rem' }}>{proj.title}</p>
-                                    <p className="text-[10px] text-gray-400" style={{ fontSize: '10px', color: '#94a3b8' }}>{proj.techStack}</p>
-                                  </div>
-                                  <button className="text-gray-300 hover:text-black" style={{ background: 'none', border: 'none', cursor: 'pointer' }}><Edit size={14} /></button>
-                                </div>
-                              ))}
-                              <button className="flex flex-col items-center justify-center border border-solid border-gray-200 rounded-lg hover:bg-gray-50 text-gray-300 transition-all" style={{ padding: '12px', borderRadius: '8px', background: 'transparent', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#cbd5e0' }}>
-                                <Plus size={16} />
-                                <span className="text-[10px] font-bold mt-1" style={{ fontSize: '10px', fontWeight: 800, marginTop: '4px' }}>프로젝트 등록</span>
-                              </button>
+                      <div className="grid grid-cols-2 gap-4" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                        {work.projects?.map((proj: any) => (
+                          <div key={proj.id} className="p-4 bg-white border border-gray-100 rounded-lg shadow-sm flex items-center gap-4" style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: '#fff', border: '1px solid #f1f5f9', borderRadius: '8px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
+                            <div className="w-10 h-10 bg-blue-50 text-blue-600 flex items-center justify-center rounded-lg" style={{ width: '40px', height: '40px', background: '#eff6ff', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px' }}><Cpu size={20} /></div>
+                            <div style={{ flex: 1 }}>
+                              <p className="font-bold text-sm" style={{ fontWeight: 700, fontSize: '0.9rem' }}>{proj.title}</p>
+                              <p className="text-[10px] text-gray-400" style={{ fontSize: '10px', color: '#94a3b8' }}>{proj.techStack}</p>
                             </div>
+                            <button className="text-gray-300 hover:text-black" style={{ background: 'none', border: 'none', cursor: 'pointer' }}><Edit size={14} /></button>
                           </div>
                         ))}
-                        {workExperiences.length === 0 && (
-                          <EmptyState
-                            message="등록된 경력 정보가 없습니다."
-                            onAdd={() => {
-                              setEditingWorkId(null);
-                              setWorkFormData({ companyName: '', role: '', startDate: '', endDate: '', isCurrent: false, summary: '', description: '', sortOrder: 0 });
-                              setIsAddingWork(true);
-                            }}
-                          />
-                        )}
+                        <button className="flex flex-col items-center justify-center border border-solid border-gray-200 rounded-lg hover:bg-gray-50 text-gray-300 transition-all" style={{ padding: '12px', borderRadius: '8px', background: 'transparent', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#cbd5e0' }}>
+                          <Plus size={16} />
+                          <span className="text-[10px] font-bold mt-1" style={{ fontSize: '10px', fontWeight: 800, marginTop: '4px' }}>프로젝트 등록</span>
+                        </button>
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  ))}
+                  {workExperiences.length === 0 && (
+                    <EmptyState
+                      message="등록된 경력 정보가 없습니다."
+                      onAdd={() => {
+                        setEditingWorkId(null);
+                        setWorkFormData({ companyName: '', role: '', startDate: '', endDate: '', isCurrent: false, summary: '', description: '', sortOrder: 0 });
+                        setIsAddingWork(true);
+                      }}
+                    />
+                  )}
                 </div>
+              )}
+            </div>
+          </div>
+        )}
 
-                {/* 4. 개인 프로젝트 및 자격증 관리 */}
-                <div className="grid grid-cols-2 gap-8" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
-                  <div className={styles.contentCard}>
-                    <div className={styles.cardTop}>
-                      <div className="flex items-center gap-2">
-                        <FolderOpen size={18} className="text-purple-500" />
-                        <h3 className="font-bold">개인 프로젝트 (Side)</h3>
+        {/* 4. 사이드 프로젝트 관리 */}
+        {activeTab === 'side' && profile.id && (
+          <div className={styles.contentCard}>
+            <div className={styles.cardTop}>
+              <div className="flex items-center gap-2">
+                <FolderOpen size={18} className="text-purple-500" />
+                <h3 className="font-bold">사이드 프로젝트 관리</h3>
+              </div>
+              <button
+                className={styles.btnPrimary}
+                style={{ padding: '6px 14px', fontSize: '0.8rem' }}
+                onClick={() => {
+                  setEditingProjectId(null);
+                  setProjectFormData({ title: '', description: '', techStack: '', githubUrl: '', demoUrl: '', sortOrder: projects.length, thumbnailId: '', fileUrl: '' });
+                  setIsAddingProject(true);
+                }}
+              >
+                <Plus size={14} /> 프로젝트 등록
+              </button>
+            </div>
+            <div style={{ padding: '24px' }}>
+              {loadingStates.projects ? <LoadingState /> : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {projects.map(proj => (
+                    <div key={proj.id} className="flex items-center justify-between p-4 border border-gray-100 rounded-xl" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', border: '1px solid #f1f5f9', borderRadius: '12px' }}>
+                      <div>
+                        <p className="font-bold text-blue-600 hover:underline cursor-pointer" style={{ fontWeight: 800, color: '#2563eb' }}>{proj.title}</p>
+                        <p className="text-xs text-gray-400 mt-1" style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{proj.description}</p>
                       </div>
-                      <button
-                        className={styles.btnPrimary}
-                        style={{ padding: '6px 14px', fontSize: '0.8rem' }}
-                      >
-                        <Plus size={14} /> 프로젝트 등록
-                      </button>
+                      <div className="flex gap-2" style={{ display: 'flex', gap: '6px' }}>
+                        <button className={styles.btnIcon} style={{ padding: '4px' }} onClick={() => handleProjectEdit(proj)}><Edit size={12} /></button>
+                        <button className={styles.btnIcon} style={{ padding: '4px' }} onClick={() => handleProjectDelete(proj.id)}><Trash2 size={12} /></button>
+                      </div>
                     </div>
-                    <div style={{ padding: '24px' }}>
-                      {loadingStates.projects ? <LoadingState /> : (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                          {projects.map(proj => (
-                            <div key={proj.id} className="flex items-center justify-between p-4 border border-gray-100 rounded-xl" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', border: '1px solid #f1f5f9', borderRadius: '12px' }}>
-                              <div>
-                                <p className="font-bold text-blue-600 hover:underline cursor-pointer" style={{ fontWeight: 800, color: '#2563eb' }}>{proj.title}</p>
-                                <p className="text-xs text-gray-400 mt-1" style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{proj.description}</p>
-                              </div>
-                              <div className="flex gap-2" style={{ display: 'flex', gap: '6px' }}>
-                                <button className={styles.btnIcon} style={{ padding: '4px' }}><Edit size={12} /></button>
-                                <button className={styles.btnIcon} style={{ padding: '4px' }}><Trash2 size={12} /></button>
-                              </div>
-                            </div>
-                          ))}
-                          {projects.length === 0 && (
-                            <EmptyState
-                              message="등록된 사이드 프로젝트가 없습니다."
-                              onAdd={() => { }}
-                            />
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
+                  ))}
+                  {projects.length === 0 && (
+                    <EmptyState
+                      message="등록된 사이드 프로젝트가 없습니다."
+                      onAdd={() => { }}
+                    />
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
-                  <div className={styles.contentCard}>
-                    <div className={styles.cardTop}>
-                      <div className="flex items-center gap-2">
-                        <Award size={18} className="text-yellow-500" />
-                        <h3 className="font-bold">자격증 및 수상</h3>
-                      </div>
-                      <button className={styles.btnPrimary} style={{ padding: '6px 14px', fontSize: '0.8rem' }} onClick={() => {
+        {/* 5. 자격증 관리 */}
+        {activeTab === 'cert' && profile.id && (
+          <div className={styles.contentCard}>
+            <div className={styles.cardTop}>
+              <div className="flex items-center gap-2">
+                <Award size={18} className="text-yellow-500" />
+                <h3 className="font-bold">자격증 및 수상 관리</h3>
+              </div>
+              <button className={styles.btnPrimary} style={{ padding: '6px 14px', fontSize: '0.8rem' }} onClick={() => {
+                setIsAddingCert(true);
+                setEditingCertId(null);
+                setFormData({ title: '', issuer: '', status: '취득완료', acquiredAt: '', attachmentId: '', fileUrl: '', sortOrder: certs.length });
+              }}>
+                <Plus size={14} /> 자격증 및 수상 등록
+              </button>
+            </div>
+            <div style={{ padding: '24px' }}>
+              {loadingStates.certs ? <LoadingState /> : (
+                <>
+                  {certs.length > 0 ? (
+                    <table className={styles.listTable}>
+                      <thead className={styles.listHead}>
+                        <tr>
+                          <th style={{ padding: '12px 0' }}>명칭</th>
+                          <th style={{ padding: '12px 0' }}>상태</th>
+                          <th style={{ padding: '12px 0', textAlign: 'right' }}>관리</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {certs.map((cert) => (
+                          <tr key={cert.id} className={styles.listRow}>
+                            <td style={{ padding: '12px 0' }}>
+                              <div className="font-bold" style={{ fontWeight: 700 }}>{cert.title}</div>
+                              <div className="text-[10px] text-gray-400" style={{ fontSize: '10px' }}>{cert.issuer}</div>
+                            </td>
+                            <td style={{ padding: '12px 0' }}>{cert.status}</td>
+                            <td style={{ padding: '12px 0', textAlign: 'right' }}>
+                              <button className="text-gray-300 hover:text-red-500" style={{ color: '#cbd5e0', background: 'none', border: 'none', cursor: 'pointer' }} onClick={() => handleCertDelete(cert.id)}><Trash2 size={14} /></button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  ) : (
+                    <EmptyState
+                      message="아직 등록된 자격증 및 수상이 없습니다."
+                      onAdd={() => {
                         setIsAddingCert(true);
                         setEditingCertId(null);
                         setFormData({ title: '', issuer: '', status: '취득완료', acquiredAt: '', attachmentId: '', fileUrl: '', sortOrder: certs.length });
-                      }}>
-                        <Plus size={14} /> 자격증 및 수상 등록
-                      </button>
-                    </div>
-                    <div style={{ padding: '24px' }}>
-                      {loadingStates.certs ? <LoadingState /> : (
-                        <>
-                          {certs.length > 0 ? (
-                            <table className={styles.listTable}>
-                              <thead className={styles.listHead}>
-                                <tr>
-                                  <th style={{ padding: '12px 0' }}>명칭</th>
-                                  <th style={{ padding: '12px 0' }}>상태</th>
-                                  <th style={{ padding: '12px 0', textAlign: 'right' }}>관리</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {certs.map((cert) => (
-                                  <tr key={cert.id} className={styles.listRow}>
-                                    <td style={{ padding: '12px 0' }}>
-                                      <div className="font-bold" style={{ fontWeight: 700 }}>{cert.title}</div>
-                                      <div className="text-[10px] text-gray-400" style={{ fontSize: '10px' }}>{cert.issuer}</div>
-                                    </td>
-                                    <td style={{ padding: '12px 0' }}>{cert.status}</td>
-                                    <td style={{ padding: '12px 0', textAlign: 'right' }}>
-                                      <button className="text-gray-300 hover:text-red-500" style={{ color: '#cbd5e0', background: 'none', border: 'none', cursor: 'pointer' }} onClick={() => handleCertDelete(cert.id)}><Trash2 size={14} /></button>
-                                    </td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          ) : (
-                            <EmptyState
-                              message="아직 등록된 정보가 없습니다."
-                              onAdd={() => {
-                                setIsAddingCert(true);
-                                setEditingCertId(null);
-                                setFormData({ title: '', issuer: '', status: '취득완료', acquiredAt: '', attachmentId: '', fileUrl: '', sortOrder: certs.length });
-                              }}
-                            />
-                          )}
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </>
-            ) : (
-              <div style={{ padding: '40px', textAlign: 'center' }}>
-                <p style={{ color: '#64748b', fontSize: '1rem', fontWeight: 600 }}>
-                  프로필 정보를 먼저 입력하고 저장해 주세요.<br />
-                  프로필이 생성된 후에 기술 스택 및 경력 관리가 가능합니다.
-                </p>
-              </div>
-            )}
-
+                      }}
+                    />
+                  )}
+                </>
+              )}
+            </div>
           </div>
-        )
-        }
+        )}
 
-        {
-          activeTab === 'media' && (
-            <div className={styles.contentCard}>
-              <div className={styles.cardTop}>
-                <div className="flex items-center gap-2">
-                  <ImageIcon size={18} className="text-blue-500" />
-                  <h3 className="font-bold">업로드된 모든 파일</h3>
-                </div>
-              </div>
-              <div style={{ padding: '24px' }}>
-                {loadingStates.media ? <LoadingState /> : (
-                  <>
-                    {mediaList.length > 0 ? (
-                      <table className={styles.listTable}>
-                        <thead className={styles.listHead}>
-                          <tr>
-                            <th style={{ padding: '12px 0' }}>파일 정보</th>
-                            <th style={{ padding: '12px 0' }}>사용 출처</th>
-                            <th style={{ padding: '12px 0' }}>유형 / 생성일</th>
-                            <th style={{ padding: '12px 0', textAlign: 'right' }}>관리</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {mediaList.map((item) => (
-                            <tr key={item.id} className={styles.listRow}>
-                              <td style={{ padding: '16px 0' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                  <div style={{
-                                    width: '44px',
-                                    height: '44px',
-                                    borderRadius: '8px',
-                                    overflow: 'hidden',
-                                    background: '#f8fafc',
-                                    border: '1px solid #f1f5f9',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center'
-                                  }}>
-                                    {item.mimeType.startsWith('image/') ? (
-                                      <img src={item.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                    ) : (
-                                      <FileIcon size={18} className="text-gray-300" />
-                                    )}
-                                  </div>
-                                  <div>
-                                    <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#111', maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.originalName}</div>
-                                    <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '2px' }}>{(item.size / 1024).toFixed(1)} KB</div>
-                                  </div>
-                                </div>
-                              </td>
-                              <td style={{ padding: '16px 0' }}>
-                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                                  {item.userAvatar && (
-                                    <span style={{ fontSize: '10px', padding: '2px 8px', background: '#eff6ff', color: '#3b82f6', borderRadius: '4px', fontWeight: 800 }}>프로필 이미지</span>
-                                  )}
-                                  {item.projectThumb && (
-                                    <span style={{ fontSize: '10px', padding: '2px 8px', background: '#f0fdf4', color: '#22c55e', borderRadius: '4px', fontWeight: 800 }}>프로젝트: {item.projectThumb.title}</span>
-                                  )}
-                                  {item.certFile && (
-                                    <span style={{ fontSize: '10px', padding: '2px 8px', background: '#fff7ed', color: '#f97316', borderRadius: '4px', fontWeight: 800 }}>자격증: {item.certFile.title}</span>
-                                  )}
-                                  {!item.userAvatar && !item.projectThumb && !item.certFile && (
-                                    <span style={{ fontSize: '10px', padding: '2px 8px', background: '#f8fafc', color: '#94a3b8', borderRadius: '4px', fontWeight: 600 }}>미사용</span>
-                                  )}
-                                </div>
-                              </td>
-                              <td style={{ padding: '16px 0' }}>
-                                <span style={{
-                                  display: 'inline-block',
-                                  padding: '2px 8px',
-                                  background: '#f1f5f9',
-                                  borderRadius: '4px',
-                                  fontSize: '10px',
-                                  fontWeight: 800,
-                                  color: '#64748b',
-                                  textTransform: 'uppercase'
-                                }}>
-                                  {item.mimeType.split('/')[1]}
-                                </span>
-                                <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '4px' }}>{new Date(item.createdAt).toLocaleDateString()}</div>
-                              </td>
-                              <td style={{ padding: '16px 0', textAlign: 'right' }}>
-                                <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
-                                  <button className={styles.btnIcon} title="URL 복사" onClick={() => copyToClipboard(item.url)}><Copy size={12} /></button>
-                                  <a href={item.url} target="_blank" className={styles.btnIcon} title="열기" rel="noreferrer"><ExternalLink size={12} /></a>
-                                  <button className={styles.btnIcon} title="삭제" style={{ borderColor: '#fee2e2' }} onClick={() => { if (confirm('정말로 삭제하시겠습니까?')) fetch(`/api/admin?target=attachments&id=${item.id}`, { method: 'DELETE' }).then(() => fetchMedia()) }}><Trash2 size={12} className="text-red-400" /></button>
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    ) : (
-                      <EmptyState
-                        message="업로드된 파일이 없습니다."
-                      />
-                    )}
-                  </>
-                )}
+        {/* 6. 전체 파일 관리 (Media) */}
+        {activeTab === 'media' && (
+          <div className={styles.contentCard}>
+            <div className={styles.cardTop}>
+              <div className="flex items-center gap-2">
+                <ImageIcon size={18} className="text-blue-500" />
+                <h3 className="font-bold">업로드된 모든 파일</h3>
               </div>
             </div>
-          )
-        }
-      </main >
+            <div style={{ padding: '24px' }}>
+              {loadingStates.media ? <LoadingState /> : (
+                <>
+                  {mediaList.length > 0 ? (
+                    <table className={styles.listTable}>
+                      <thead className={styles.listHead}>
+                        <tr>
+                          <th style={{ padding: '12px 0' }}>파일 정보</th>
+                          <th style={{ padding: '12px 0' }}>사용 출처</th>
+                          <th style={{ padding: '12px 0' }}>유형 / 생성일</th>
+                          <th style={{ padding: '12px 0', textAlign: 'right' }}>관리</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {mediaList.map((item) => (
+                          <tr key={item.id} className={styles.listRow}>
+                            <td style={{ padding: '16px 0' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <div style={{
+                                  width: '44px',
+                                  height: '44px',
+                                  borderRadius: '8px',
+                                  overflow: 'hidden',
+                                  background: '#f8fafc',
+                                  border: '1px solid #f1f5f9',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center'
+                                }}>
+                                  {item.mimeType.startsWith('image/') ? (
+                                    <img src={item.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                  ) : (
+                                    <FileIcon size={18} className="text-gray-300" />
+                                  )}
+                                </div>
+                                <div>
+                                  <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#111', maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.originalName}</div>
+                                  <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '2px' }}>{(item.size / 1024).toFixed(1)} KB</div>
+                                </div>
+                              </div>
+                            </td>
+                            <td style={{ padding: '16px 0' }}>
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                                {item.userAvatar && (
+                                  <span style={{ fontSize: '10px', padding: '2px 8px', background: '#eff6ff', color: '#3b82f6', borderRadius: '4px', fontWeight: 800 }}>프로필 이미지</span>
+                                )}
+                                {item.projectThumb && (
+                                  <span style={{ fontSize: '10px', padding: '2px 8px', background: '#f0fdf4', color: '#22c55e', borderRadius: '4px', fontWeight: 800 }}>프로젝트: {item.projectThumb.title}</span>
+                                )}
+                                {item.certFile && (
+                                  <span style={{ fontSize: '10px', padding: '2px 8px', background: '#fff7ed', color: '#f97316', borderRadius: '4px', fontWeight: 800 }}>자격증: {item.certFile.title}</span>
+                                )}
+                                {!item.userAvatar && !item.projectThumb && !item.certFile && (
+                                  <span style={{ fontSize: '10px', padding: '2px 8px', background: '#f8fafc', color: '#94a3b8', borderRadius: '4px', fontWeight: 600 }}>미사용</span>
+                                )}
+                              </div>
+                            </td>
+                            <td style={{ padding: '16px 0' }}>
+                              <span style={{
+                                display: 'inline-block',
+                                padding: '2px 8px',
+                                background: '#f1f5f9',
+                                borderRadius: '4px',
+                                fontSize: '10px',
+                                fontWeight: 800,
+                                color: '#64748b',
+                                textTransform: 'uppercase'
+                              }}>
+                                {item.mimeType.split('/')[1]}
+                              </span>
+                              <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '4px' }}>{new Date(item.createdAt).toLocaleDateString()}</div>
+                            </td>
+                            <td style={{ padding: '16px 0', textAlign: 'right' }}>
+                              <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
+                                <button className={styles.btnIcon} title="URL 복사" onClick={() => copyToClipboard(item.url)}><Copy size={12} /></button>
+                                <a href={item.url} target="_blank" className={styles.btnIcon} title="열기" rel="noreferrer"><ExternalLink size={12} /></a>
+                                <button className={styles.btnIcon} title="삭제" style={{ borderColor: '#fee2e2' }} onClick={() => { if (confirm('정말로 삭제하시겠습니까?')) fetch(`/api/admin?target=attachments&id=${item.id}`, { method: 'DELETE' }).then(() => fetchMedia()) }}><Trash2 size={12} className="text-red-400" /></button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  ) : (
+                    <EmptyState
+                      message="업로드된 파일이 없습니다."
+                    />
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        )}
+      </main>
 
       {/* 근무 경력 등록/수정 모달 */}
       < Modal
@@ -1408,7 +1515,83 @@ export default function AdminPage() {
             </button>
           </div>
         </form>
-      </Modal >
-    </div >
+      </Modal>
+
+      {/* 사이드 프로젝트 등록/수정 모달 */}
+      <Modal
+        isOpen={isAddingProject}
+        onClose={() => setIsAddingProject(false)}
+        title={editingProjectId ? '사이드 프로젝트 수정' : '사이드 프로젝트 등록'}
+      >
+        <form onSubmit={handleProjectSubmit} className={styles.formGrid}>
+          <div className={styles.field}>
+            <label>프로젝트 제목</label>
+            <input
+              className={styles.input}
+              placeholder="예: AI 포트폴리오 빌더"
+              value={projectFormData.title}
+              onChange={e => setProjectFormData({ ...projectFormData, title: e.target.value })}
+              required
+            />
+          </div>
+
+          <div className={styles.field}>
+            <label>간략 설명</label>
+            <input
+              className={styles.input}
+              placeholder="프로젝트의 핵심 가치를 한 줄로 설명하세요."
+              value={projectFormData.description}
+              onChange={e => setProjectFormData({ ...projectFormData, description: e.target.value })}
+            />
+          </div>
+
+          <div className={styles.field}>
+            <label>기술 스택 (쉼표로 구분)</label>
+            <input
+              className={styles.input}
+              placeholder="예: Next.js, TypeScript, Prisma"
+              value={projectFormData.techStack}
+              onChange={e => setProjectFormData({ ...projectFormData, techStack: e.target.value })}
+            />
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div className={styles.field}>
+              <label>GitHub URL</label>
+              <input
+                className={styles.input}
+                placeholder="https://github.com/..."
+                value={projectFormData.githubUrl}
+                onChange={e => setProjectFormData({ ...projectFormData, githubUrl: e.target.value })}
+              />
+            </div>
+            <div className={styles.field}>
+              <label>데모 URL (선택)</label>
+              <input
+                className={styles.input}
+                placeholder="https://..."
+                value={projectFormData.demoUrl}
+                onChange={e => setProjectFormData({ ...projectFormData, demoUrl: e.target.value })}
+              />
+            </div>
+          </div>
+
+          <div className={styles.btnGroup}>
+            <button type="button" onClick={() => setIsAddingProject(false)} className={styles.btnCancel} disabled={isUploading}>닫기</button>
+            <button type="submit" className={styles.btnPrimary} disabled={isUploading}>
+              {isUploading ? (
+                <>
+                  <Loader2 size={14} className="animate-spin" />
+                  {" "}
+                  {editingProjectId ? '수정 중...' : '등록 중...'}
+                </>
+              ) : (
+                editingProjectId ? '수정 완료' : '등록 완료'
+              )}
+            </button>
+          </div>
+        </form>
+      </Modal>
+    </div>
   );
 }
