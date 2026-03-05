@@ -239,6 +239,14 @@
   opacity: 0.9;
 }
 
+.btnPrimary:disabled {
+  background-color: #e2e8f0 !important;
+  color: #94a3b8 !important;
+  border-color: #cbd5e0 !important;
+  cursor: not-allowed;
+  opacity: 1;
+}
+
 .btnIcon {
   padding: 8px;
   border-radius: 6px;
@@ -254,12 +262,18 @@
   color: #000;
 }
 
+.btnIcon:disabled {
+  background-color: #f8fafc;
+  color: #cbd5e0;
+  border-color: #f1f5f9;
+  cursor: not-allowed;
+}
+
 /* --- Media Grid --- */
 .mediaStack {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 24px;
-  padding: 32px;
 }
 
 .mediaItem {
@@ -377,4 +391,11 @@
   font-weight: 600;
   cursor: pointer;
   border: 1px solid #eaeaea;
+}
+
+.btnCancel:disabled {
+  background-color: #f8fafc;
+  color: #cbd5e0;
+  border-color: #f1f5f9;
+  cursor: not-allowed;
 }
