@@ -112,7 +112,6 @@ model TechStack {
   id          String  @id @default(uuid())
   name        String // 기술명 (예: React)
   category    String // 카테고리 (Frontend, Backend, Database, DevOps 등)
-  level       String // 숙련도 (상, 중, 하)
   description String? @db.Text // 해당 기술을 어떻게 사용하는지 설명
   sortOrder   Int     @default(0) // 노출 순서
 

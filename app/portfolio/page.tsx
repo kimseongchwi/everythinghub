@@ -84,7 +84,6 @@ export default async function PortfolioPage() {
       const existingGroup = acc.find(g => g.category === stack.category);
       const skillItem = {
         name: stack.name,
-        level: stack.level,
         description: stack.description
       };
       if (existingGroup) {

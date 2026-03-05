@@ -151,13 +151,7 @@ export default function AdminPage() {
   // 기술 스택 관리 상태
   const [isAddingTech, setIsAddingTech] = useState(false);
   const [editingTechId, setEditingTechId] = useState<string | null>(null);
-  const [techFormData, setTechFormData] = useState({
-    name: '',
-    category: 'Frontend',
-    level: '상',
-    description: '',
-    sortOrder: 0
-  });
+  const [techFormData, setTechFormData] = useState({ name: '', category: 'Frontend', description: '', sortOrder: 0 });
 
   // 포트폴리오 관리 상태 (자격증 등)
   const [certs, setCerts] = useState<any[]>([]);
@@ -334,7 +328,7 @@ export default function AdminPage() {
         alert(editingTechId ? '기술 스택이 수정되었습니다.' : '새 기술 스택이 등록되었습니다.');
         setIsAddingTech(false);
         setEditingTechId(null);
-        setTechFormData({ name: '', category: 'Frontend', level: '상', description: '', sortOrder: 0 });
+        setTechFormData({ name: '', category: 'Frontend', description: '', sortOrder: 0 });
         fetchTechStacks();
       } else {
         const error = await res.json();
@@ -360,7 +354,6 @@ export default function AdminPage() {
     setTechFormData({
       name: stack.name,
       category: stack.category,
-      level: stack.level,
       description: stack.description || '',
       sortOrder: stack.sortOrder
     });
@@ -808,7 +801,7 @@ export default function AdminPage() {
                       onClick={() => {
                         setIsAddingTech(true);
                         setEditingTechId(null);
-                        setTechFormData({ name: '', category: 'Frontend', level: '상', description: '', sortOrder: techStacks.length });
+                        setTechFormData({ name: '', category: 'Frontend', description: '', sortOrder: techStacks.length });
                       }}
                     >
                       <Plus size={14} /> 기술 스택 등록
@@ -836,11 +829,6 @@ export default function AdminPage() {
                                       <div style={{ flex: 1 }}>
                                         <div className="flex items-center gap-2 mb-1" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
                                           <span className="font-bold text-[0.95rem]" style={{ fontWeight: 800, fontSize: '0.95rem' }}>{stack.name}</span>
-                                          <span className={`px-2 py-0.5 rounded text-[0.65rem] font-black ${stack.level === '상' ? 'bg-blue-100 text-blue-600' :
-                                            stack.level === '중' ? 'bg-orange-100 text-orange-600' : 'bg-gray-100 text-gray-600'
-                                            }`} style={{ padding: '2px 8px', borderRadius: '4px', fontSize: '10px', fontWeight: 900 }}>
-                                            {stack.level}
-                                          </span>
                                         </div>
                                         <p className="text-sm text-gray-500" style={{ fontSize: '0.8rem', color: '#64748b' }}>{stack.description}</p>
                                       </div>
@@ -872,7 +860,7 @@ export default function AdminPage() {
                             onAdd={() => {
                               setIsAddingTech(true);
                               setEditingTechId(null);
-                              setTechFormData({ name: '', category: 'Frontend', level: '상', description: '', sortOrder: techStacks.length });
+                              setTechFormData({ name: '', category: 'Frontend', description: '', sortOrder: techStacks.length });
                             }}
                           />
                         )}
@@ -1285,31 +1273,17 @@ export default function AdminPage() {
             />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-            <div className={styles.field}>
-              <label>카테고리</label>
-              <select
-                className={styles.select}
-                value={techFormData.category}
-                onChange={e => setTechFormData({ ...techFormData, category: e.target.value })}
-              >
-                {categories.map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
-                ))}
-              </select>
-            </div>
-            <div className={styles.field}>
-              <label>숙련도</label>
-              <select
-                className={styles.select}
-                value={techFormData.level}
-                onChange={e => setTechFormData({ ...techFormData, level: e.target.value })}
-              >
-                <option value="상">상 (매우 능숙)</option>
-                <option value="중">중 (실무 활용 가능)</option>
-                <option value="하">하 (기초 지식 보유)</option>
-              </select>
-            </div>
+          <div className={styles.field}>
+            <label>카테고리</label>
+            <select
+              className={styles.select}
+              value={techFormData.category}
+              onChange={e => setTechFormData({ ...techFormData, category: e.target.value })}
+            >
+              {categories.map(cat => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
           </div>
 
           <div className={styles.field}>

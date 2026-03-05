@@ -71,9 +71,6 @@ export default function PortfolioClient({ initialCerts, portfolioData }: Portfol
                       <div key={j} className={styles.skillDetailItem}>
                         <div className={styles.skillHeaderRow}>
                           <span className={styles.skillItemName}>{skill.name}</span>
-                          <span className={`${styles.skillLevelBadge} ${styles['level' + skill.level]}`}>
-                            {skill.level}
-                          </span>
                         </div>
                         {skill.description && (
                           <p className={styles.skillItemDesc}>{skill.description}</p>
