@@ -213,14 +213,13 @@ export async function POST(request: Request) {
     if (target === 'tech') {
       if (!user) return NextResponse.json({ error: 'No user found' }, { status: 404 });
       const body = await request.json();
-      const { name, category, level, description, sortOrder } = body;
+      const { name, category, description, sortOrder } = body;
       const tech = await prisma.techStack.create({
         data: {
           name,
           category,
-          level,
           description,
-          sortOrder: sortOrder ? Number(sortOrder) : 0,
+          sortOrder: parseInt(String(sortOrder || 0)),
           userId: user.id
         }
       });
@@ -374,13 +373,12 @@ export async function PATCH(request: Request) {
     }
 
     if (target === 'tech') {
-      const { name, category, level, description, sortOrder } = body;
+      const { name, category, description, sortOrder } = body;
       const updated = await prisma.techStack.update({
         where: { id },
         data: {
           name,
           category,
-          level,
           description,
           sortOrder: sortOrder ? Number(sortOrder) : 0,
         },

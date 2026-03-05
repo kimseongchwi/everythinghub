@@ -168,26 +168,7 @@
 }
 
 .skillLevelBadge {
-  font-size: 0.65rem;
-  font-weight: 900;
-  padding: 2px 8px;
-  border-radius: 6px;
-  text-transform: uppercase;
-}
-
-.level상 {
-  background: #eff6ff;
-  color: #2563eb;
-}
-
-.level중 {
-  background: #fff7ed;
-  color: #ea580c;
-}
-
-.level하 {
-  background: #f8fafc;
-  color: #64748b;
+  display: none;
 }
 
 .skillItemDesc {
