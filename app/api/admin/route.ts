@@ -65,7 +65,12 @@ export async function GET(request: Request) {
 
       case 'attachments':
         const attachments = await prisma.attachment.findMany({
-          orderBy: { createdAt: 'desc' }
+          orderBy: { createdAt: 'desc' },
+          include: {
+            userAvatar: { select: { name: true } },
+            projectThumb: { select: { title: true } },
+            certFile: { select: { title: true } }
+          }
         });
         return NextResponse.json(attachments);
 
@@ -85,9 +90,8 @@ export async function POST(request: Request) {
 
   try {
     const user = await getMainUser();
-    const body = await request.json();
-
     if (target === 'profile') {
+      const body = await request.json();
       const {
         name,
         email,
@@ -190,6 +194,7 @@ export async function POST(request: Request) {
 
     if (target === 'certs') {
       if (!user) return NextResponse.json({ error: '사용자를 찾을 수 없습니다.' }, { status: 404 });
+      const body = await request.json();
       const { title, issuer, status, acquiredAt, attachmentId, sortOrder } = body;
       const cert = await prisma.certification.create({
         data: {
@@ -207,6 +212,7 @@ export async function POST(request: Request) {
 
     if (target === 'tech') {
       if (!user) return NextResponse.json({ error: 'No user found' }, { status: 404 });
+      const body = await request.json();
       const { name, category, level, description, sortOrder } = body;
       const tech = await prisma.techStack.create({
         data: {
@@ -221,11 +227,35 @@ export async function POST(request: Request) {
       return NextResponse.json(tech);
     }
 
+    if (target === 'work') {
+      if (!user) return NextResponse.json({ error: '사용자를 찾을 수 없습니다.' }, { status: 404 });
+      const body = await request.json();
+      const { companyName, role, startDate, endDate, isCurrent, summary, description, sortOrder } = body;
+      const work = await prisma.workExperience.create({
+        data: {
+          companyName,
+          role,
+          startDate,
+          endDate,
+          isCurrent: isCurrent || false,
+          summary,
+          description,
+          sortOrder: sortOrder ? Number(sortOrder) : 0,
+          userId: user.id
+        }
+      });
+      return NextResponse.json(work);
+    }
+
     if (target === 'attachments') {
       const filename = searchParams.get('filename');
       if (!filename || !request.body) return NextResponse.json({ error: '파일 데이터가 누락되었습니다.' }, { status: 400 });
 
-      const blob = await put(`attachments/${filename}`, request.body, {
+      // 파일 사이즈를 정확히 측정하기 위해 데이터를 읽음
+      const arrayBuffer = await request.arrayBuffer();
+      const fileSize = arrayBuffer.byteLength;
+
+      const blob = await put(`attachments/${filename}`, arrayBuffer, {
         access: 'public',
         addRandomSuffix: true
       });
@@ -235,7 +265,7 @@ export async function POST(request: Request) {
           originalName: filename,
           fileName: blob.pathname,
           url: blob.url,
-          size: 0,
+          size: fileSize,
           mimeType: blob.contentType || 'application/octet-stream'
         },
       });
@@ -343,6 +373,39 @@ export async function PATCH(request: Request) {
       return NextResponse.json(updated);
     }
 
+    if (target === 'tech') {
+      const { name, category, level, description, sortOrder } = body;
+      const updated = await prisma.techStack.update({
+        where: { id },
+        data: {
+          name,
+          category,
+          level,
+          description,
+          sortOrder: sortOrder ? Number(sortOrder) : 0,
+        },
+      });
+      return NextResponse.json(updated);
+    }
+
+    if (target === 'work') {
+      const { companyName, role, startDate, endDate, isCurrent, summary, description, sortOrder } = body;
+      const updated = await prisma.workExperience.update({
+        where: { id },
+        data: {
+          companyName,
+          role,
+          startDate,
+          endDate,
+          isCurrent: isCurrent || false,
+          summary,
+          description,
+          sortOrder: sortOrder ? Number(sortOrder) : 0,
+        },
+      });
+      return NextResponse.json(updated);
+    }
+
     return NextResponse.json({ error: '잘못된 요청 대상입니다.' }, { status: 400 });
   } catch (error: any) {
     console.error('API 수정 오류:', error);
@@ -365,6 +428,9 @@ export async function DELETE(request: Request) {
         break;
       case 'tech':
         await prisma.techStack.delete({ where: { id } });
+        break;
+      case 'work':
+        await prisma.workExperience.delete({ where: { id } });
         break;
       case 'attachments':
         const attachment = await prisma.attachment.findUnique({ where: { id } });

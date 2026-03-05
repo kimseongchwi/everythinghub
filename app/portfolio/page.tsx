@@ -78,7 +78,7 @@ export default async function PortfolioPage() {
       school: edu.school,
       major: edu.major,
       degreeStatus: edu.degreeStatus,
-      period: `${edu.startDate} — ${edu.endDate || (edu.isCurrent ? '재학 중' : '')}`
+      period: [edu.startDate, edu.endDate || (edu.isCurrent ? '재학 중' : '')].filter(Boolean).join(' ~ ')
     })),
     skills: (safeUser.techStacks || []).reduce((acc: any[], stack: any) => {
       const existingGroup = acc.find(g => g.category === stack.category);
@@ -96,7 +96,7 @@ export default async function PortfolioPage() {
     }, []),
     workExperience: (safeUser.workExperiences || []).map((work: any) => ({
       company: work.companyName,
-      period: `${work.startDate} — ${work.endDate || (work.isCurrent ? '재직 중' : '')}`,
+      period: [work.startDate, work.endDate || (work.isCurrent ? '재직 중' : '')].filter(Boolean).join(' ~ '),
       role: work.role,
       summary: work.summary,
       description: work.description,
@@ -111,7 +111,7 @@ export default async function PortfolioPage() {
     personalProjects: (safeUser.projects || []).map((proj: any) => ({
       id: proj.id,
       title: proj.title,
-      period: `${proj.startDate} — ${proj.endDate || (proj.isCurrent ? '진행 중' : '')}`,
+      period: [proj.startDate, proj.endDate || (proj.isCurrent ? '진행 중' : '')].filter(Boolean).join(' ~ '),
       description: proj.description,
       content: proj.content,
       techStack: proj.techStack,

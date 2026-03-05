@@ -12,9 +12,9 @@ export default function ConditionalNavigation({
   notoSansKrClassName: string;
 }) {
   const pathname = usePathname();
-  const isAdmin = pathname?.startsWith('/admin');
+  const isNoNav = pathname?.startsWith('/admin') || pathname?.startsWith('/portfolio');
 
-  if (isAdmin) {
+  if (isNoNav) {
     return (
       <body className={`${notoSansKrClassName} antialiased bg-white text-gray-900 min-h-screen flex flex-col`}>
         <main className="flex-grow">
@@ -27,15 +27,15 @@ export default function ConditionalNavigation({
   return (
     <body className={`${notoSansKrClassName} antialiased bg-white text-gray-900 min-h-screen flex flex-col`}>
       {/* 공통 헤더 */}
-      <header className="sticky top-0 z-[100] bg-[#f5f5f5] border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-6 md:px-8 h-16 flex justify-between items-center">
-          <Link href="/" className="text-[11px] font-black tracking-[0.2em] md:tracking-[0.4em] text-gray-950 uppercase whitespace-nowrap transition-all">
+      <header className="sticky top-0 z-[100] bg-white/80 backdrop-blur-md border-b border-gray-100">
+        <div className="max-w-6xl mx-auto px-6 h-14 flex justify-between items-center">
+          <Link href="/" className="text-[10px] font-black tracking-[0.3em] text-gray-900 uppercase whitespace-nowrap hover:opacity-70 transition-all">
             Everything Hub
           </Link>
-          <nav className="flex gap-8 text-[12px] font-bold text-gray-400 items-center">
-            <Link href="/" className="hover:text-blue-600 transition-colors">Home</Link>
+          <nav className="flex gap-6 text-[11px] font-bold text-gray-400 items-center">
+            <Link href="/" className="hover:text-black transition-colors uppercase tracking-widest">Home</Link>
             {process.env.NODE_ENV === 'development' && (
-              <Link href="/admin" className="hover:text-blue-600 transition-colors">
+              <Link href="/admin" className="hover:text-black transition-colors uppercase tracking-widest">
                 Admin
               </Link>
             )}
@@ -49,20 +49,18 @@ export default function ConditionalNavigation({
       </main>
 
       {/* 공통 푸터 */}
-      <footer className="py-12 bg-[#f5f5f5] border-t border-gray-200">
-        <div className="max-w-7xl mx-auto px-6 md:px-8 text-center">
-          <div className="flex flex-col md:flex-row justify-center items-center gap-4 md:gap-8 mb-6 text-[11px] font-bold text-gray-500 tracking-wider">
-            <Link href="/privacy" className="hover:text-blue-600 transition-colors">개인정보처리방침</Link>
-            <span className="hidden md:inline text-gray-300">|</span>
-            <div className="flex flex-col md:flex-row gap-1 md:gap-2 items-center">
-              <span className="">문의:</span>
-              <a href="mailto:kimsung01265@gmail.com" className="hover:text-blue-600 transition-colors">kimsung01265@gmail.com</a>
-              <span className="hidden md:inline text-gray-300">/</span>
-              <a href="mailto:ghfkddl665@naver.com" className="hover:text-blue-600 transition-colors">ghfkddl665@naver.com</a>
+      <footer className="py-8 bg-gray-50/50 border-t border-gray-100">
+        <div className="max-w-6xl mx-auto px-6 text-center">
+          <div className="flex flex-col md:flex-row justify-center items-center gap-4 md:gap-6 mb-3 text-[11px] font-bold text-gray-400 tracking-tight">
+            <Link href="/privacy" className="hover:text-black transition-colors">개인정보처리방침</Link>
+            <span className="hidden md:inline text-gray-200">|</span>
+            <div className="flex gap-4 text-[10px] tracking-normal">
+              <a href="mailto:kimsung01265@gmail.com" className="hover:text-black transition-colors lowercase">kimsung01265@gmail.com</a>
+              <a href="mailto:ghfkddl665@naver.com" className="hover:text-black transition-colors lowercase">ghfkddl665@naver.com</a>
             </div>
           </div>
-          <p className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em]">
-            Copyright © {new Date().getFullYear()} Everything Hub. All rights reserved.
+          <p className="text-[10px] text-gray-300 font-bold tracking-[0.2em]">
+            © {new Date().getFullYear()} Everything Hub.
           </p>
         </div>
       </footer>

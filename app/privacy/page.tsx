@@ -7,7 +7,10 @@ export const metadata: Metadata = {
   description: 'Everything Hub의 개인정보처리방침입니다.',
 };
 
-export default function PrivacyPage() {
+export default async function PrivacyPage() {
+  // 로딩 마크를 보여주기 위해 의도적인 지연 추가
+  await new Promise(resolve => setTimeout(resolve, 500));
+
   return (
     <div className="min-h-screen bg-white py-20 px-6">
       <div className="max-w-4xl mx-auto prose prose-slate">
