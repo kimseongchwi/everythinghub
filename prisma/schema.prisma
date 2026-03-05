@@ -10,136 +10,152 @@ datasource db {
 
 // 사용자 프로필 정보
 model User {
-  id          String   @id @default(uuid())
-  name        String   // 이름
-  role        String?  // 대표 직함 (예: Full-Stack Developer)
-  email       String   @unique
-  phone       String?  // 연락처
-  github      String?  // 깃허브 URL
-  notion      String?  // 노션 URL
-  blog        String?  // 블로그 URL
-  intro       String?  @db.Text // 자기소개 (인사말)
-  
+  id       String  @id @default(uuid())
+  name     String // 이름
+  position String? // 전문 분야 / 지향하는 포지션 (예: Full-Stack Developer)
+  email    String  @unique
+  phone    String? // 연락처
+  github   String? // 깃허브 URL
+  notion   String? // 노션 URL
+  blog     String? // 블로그 URL
+  intro    String? @db.Text // 자기소개 (인사말)
+
   // 프로필 사진
-  avatarId    String?  @unique
-  avatar      Attachment? @relation("UserAvatar", fields: [avatarId], references: [id])
+  avatarId String?     @unique
+  avatar   Attachment? @relation("UserAvatar", fields: [avatarId], references: [id])
 
   // 관계 데이터
   educations      Education[]
   workExperiences WorkExperience[]
-  projects        Project[]        // 개인 프로젝트 및 전체 프로젝트 참조용
+  projects        Project[] // 전체 프로젝트 참조용
   techStacks      TechStack[]
   certifications  Certification[]
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-// 학력 사항
+// 학력 사항 (Education)
 model Education {
-  id          String   @id @default(uuid())
-  school      String   // 학교명
-  degree      String   // 전공 및 학위
-  period      String?  // 기간 (예: 2020.03 - 2025.02)
-  
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String  @id @default(uuid())
+  school       String // 학교명
+  major        String // 전공 (학과)
+  degreeStatus String // 학위 상태 (학사, 전문학사, 석사 등)
+  startDate    String // 시작일 (예: 2020.03)
+  endDate      String? // 종료일 (예: 2024.02)
+  isCurrent    Boolean @default(false) // 재학 중 여부
+  sortOrder    Int     @default(0) // 노출 순서
 
-  createdAt   DateTime @default(now())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-// 근무 경력
+// 근무 경력 (Work Experience)
 model WorkExperience {
-  id          String   @id @default(uuid())
-  companyName String   // 회사명
-  period      String   // 재직 기간
-  role        String   // 담당 역할
-  summary     String?  @db.Text // 경력 요약 설명
-  
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id          String  @id @default(uuid())
+  companyName String // 회사명
+  role        String // 담당 역할 (직책)
+  startDate   String // 입사일
+  endDate     String? // 퇴사일
+  isCurrent   Boolean @default(false) // 재직 중 여부
+  summary     String? @db.Text // 간략한 경력 요약
+  description String? @db.Text // 상세 업무 설명 (Markdown 가능)
+  sortOrder   Int     @default(0) // 노출 순서
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // 해당 회사에서 진행한 프로젝트들
-  projects    Project[]
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  projects Project[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-// 프로젝트 (개인 프로젝트 & 사내 프로젝트 공용)
+// 프로젝트 (Projects - Portfolio 핵심)
 model Project {
   id          String   @id @default(uuid())
-  title       String   // 프로젝트 명칭
-  description String?  @db.Text // 프로젝트 설명
-  duration    String?  // 진행 기간
-  techStack   String[] // 사용 기술 (PostgreSQL String Array)
-  githubLink  String?  // 소스 코드 링크
-  demoLink    String?  // 데모/라이브 서비스 링크
-  keyFeatures String[] // 주요 기능 및 성과 리스트
-  
-  // 프로젝트 대표 이미지
-  thumbnailId String? @unique
+  title       String // 프로젝트 명칭
+  description String?  @db.Text // 프로젝트 한줄 설명
+  content     String?  @db.Text // 상세 설명/회고 (메인 콘텐츠)
+  startDate   String? // 시작일
+  endDate     String? // 종료일
+  isCurrent   Boolean  @default(false) // 진행 중 프로젝트 여부
+  isFeatured  Boolean  @default(false) // 포트폴리오 메인 노출 여부
+  techStack   String[] // 사용 기술 태그 리스트
+  keyFeatures String[] // 주요 기능 및 성과 (불렛 포인트용)
+  githubLink  String? // 소스 코드 링크
+  demoLink    String? // 데모/라이브 서비스 링크
+  sortOrder   Int      @default(0) // 노출 순서
+
+  // 프로젝트 대표 이미지 (썸네일)
+  thumbnailId String?     @unique
   thumbnail   Attachment? @relation("ProjectThumbnail", fields: [thumbnailId], references: [id])
 
-  // 관계: 회사 프로젝트인 경우
+  // 관계: 회사 프로젝트인 경우 참조
   workExperienceId String?
   workExperience   WorkExperience? @relation(fields: [workExperienceId], references: [id], onDelete: Cascade)
-  
+
   // 관계: 개인 프로젝트인 경우 (또는 유저 소속)
-  userId           String?
-  user             User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-// 기술 스택
+// 기술 스택 (Tool & Skill)
 model TechStack {
-  id          String   @id @default(uuid())
-  name        String   // 기술명 (예: React)
-  category    String   // 카테고리 (Frontend, Backend, etc.)
-  level       String   // 숙련도 (상, 중, 하)
-  description String?  @db.Text // 상세 설명
-  
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id          String  @id @default(uuid())
+  name        String // 기술명 (예: React)
+  category    String // 카테고리 (Frontend, Backend, Database, DevOps 등)
+  level       String // 숙련도 (상, 중, 하)
+  description String? @db.Text // 해당 기술을 어떻게 사용하는지 설명
+  sortOrder   Int     @default(0) // 노출 순서
 
-  createdAt   DateTime @default(now())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-// 자격증 및 수상
+// 자격증 및 수상 (Certifications & Awards)
 model Certification {
-  id          String   @id @default(uuid())
-  title       String   // 명칭
-  issuer      String   // 발행처
-  status      String   // 상태 (취득완료, 준비중 등)
-  acquiredAt  DateTime? // 일자
-  sortOrder   Int      @default(0)
-  
-  userId      String?
-  user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id         String    @id @default(uuid())
+  title      String // 명칭
+  issuer     String // 발행처
+  status     String // 상태 (취득완료, 준비중, 만료 등)
+  acquiredAt DateTime? // 취득 일자
+  sortOrder  Int       @default(0)
 
-  // 증빙 자료
-  attachmentId String? @unique
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // 증빙 자료 (이미지/PDF)
+  attachmentId String?     @unique
   attachment   Attachment? @relation("CertAttachment", fields: [attachmentId], references: [id])
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-// 파일 관리 (첨부파일)
+// 파일 관리 (Attachments - Blob Storage 연동)
 model Attachment {
-  id           String   @id @default(uuid())
-  originalName String   // 원본 파일명
-  fileName     String   // 서버 저장 파일명
-  url          String   // 접근 경로
-  size         Int      // 파일 크기
-  mimeType     String   // 파일 타입
-  
+  id           String @id @default(uuid())
+  originalName String // 원본 파일명
+  fileName     String // 서버 저장 파일명 (Blob pathname)
+  url          String // 접근 경로 (Blob Public URL)
+  size         Int // 파일 크기 (Bytes)
+  mimeType     String // 파일 타입 (image/png, application/pdf 등)
+
   // 역참조 관계들
-  userAvatar    User?          @relation("UserAvatar")
-  projectThumb  Project?       @relation("ProjectThumbnail")
-  certFile      Certification? @relation("CertAttachment")
-  
-  createdAt    DateTime @default(now())
+  userAvatar   User?          @relation("UserAvatar")
+  projectThumb Project?       @relation("ProjectThumbnail")
+  certFile     Certification? @relation("CertAttachment")
+
+  createdAt DateTime @default(now())
 }
