@@ -15,7 +15,7 @@ export async function GET() {
           orderBy: { createdAt: 'desc' }
         },
         projects: {
-          where: { workExperienceId: null }, // 개인 프로젝트만
+          where: { workExperienceId: null }, // 사이드 프로젝트만
           include: { thumbnail: true },
           orderBy: { createdAt: 'desc' }
         },

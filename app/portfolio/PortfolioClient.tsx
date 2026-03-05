@@ -116,9 +116,9 @@ export default function PortfolioClient({ initialCerts, portfolioData }: Portfol
           </section>
 
           <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>Personal Projects</h2>
+            <h2 className={styles.sectionTitle}>Side Projects</h2>
             <div className={styles.projectsGrid}>
-              {portfolioData.personalProjects.map((proj: any) => (
+              {portfolioData.sideProjects.map((proj: any) => (
                 <div key={proj.id} className={styles.projectCard}>
                   <div className={styles.pTitleBox}>
                     <div>

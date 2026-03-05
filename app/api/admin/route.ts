@@ -271,6 +271,32 @@ export async function POST(request: Request) {
       return NextResponse.json(attachment);
     }
 
+    if (target === 'projects') {
+      if (!user) return NextResponse.json({ error: '사용자를 찾을 수 없습니다.' }, { status: 404 });
+      const body = await request.json();
+      const { title, description, techStack, githubUrl, demoUrl, thumbnailId, sortOrder, workExperienceId, content, startDate, endDate, isCurrent, isFeatured, keyFeatures } = body;
+      const project = await prisma.project.create({
+        data: {
+          title,
+          description,
+          content,
+          startDate,
+          endDate,
+          isCurrent: isCurrent || false,
+          isFeatured: isFeatured || false,
+          techStack: Array.isArray(techStack) ? techStack : (techStack ? techStack.split(',').map((s: string) => s.trim()) : []),
+          keyFeatures: Array.isArray(keyFeatures) ? keyFeatures : [],
+          githubLink: githubUrl,
+          demoLink: demoUrl,
+          thumbnailId: thumbnailId || null,
+          sortOrder: sortOrder ? Number(sortOrder) : 0,
+          userId: workExperienceId ? null : user.id,
+          workExperienceId: workExperienceId || null,
+        },
+      });
+      return NextResponse.json(project);
+    }
+
     return NextResponse.json({ error: '잘못된 요청 대상입니다.' }, { status: 400 });
   } catch (error: any) {
     console.error('API 생성 오류:', error);
@@ -404,6 +430,29 @@ export async function PATCH(request: Request) {
       return NextResponse.json(updated);
     }
 
+    if (target === 'projects') {
+      const { title, description, techStack, githubUrl, demoUrl, thumbnailId, sortOrder, content, startDate, endDate, isCurrent, isFeatured, keyFeatures } = body;
+      const updated = await prisma.project.update({
+        where: { id },
+        data: {
+          title,
+          description,
+          content,
+          startDate,
+          endDate,
+          isCurrent: isCurrent || false,
+          isFeatured: isFeatured || false,
+          techStack: Array.isArray(techStack) ? techStack : (techStack ? techStack.split(',').map((s: string) => s.trim()) : []),
+          keyFeatures: Array.isArray(keyFeatures) ? keyFeatures : [],
+          githubLink: githubUrl,
+          demoLink: demoUrl,
+          thumbnailId: thumbnailId || null,
+          sortOrder: sortOrder ? Number(sortOrder) : 0,
+        },
+      });
+      return NextResponse.json(updated);
+    }
+
     return NextResponse.json({ error: '잘못된 요청 대상입니다.' }, { status: 400 });
   } catch (error: any) {
     console.error('API 수정 오류:', error);
@@ -429,6 +478,9 @@ export async function DELETE(request: Request) {
         break;
       case 'work':
         await prisma.workExperience.delete({ where: { id } });
+        break;
+      case 'projects':
+        await prisma.project.delete({ where: { id } });
         break;
       case 'attachments':
         const attachment = await prisma.attachment.findUnique({ where: { id } });

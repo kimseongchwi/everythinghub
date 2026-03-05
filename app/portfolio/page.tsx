@@ -107,7 +107,7 @@ export default async function PortfolioPage() {
         keyFeatures: proj.keyFeatures
       }))
     })),
-    personalProjects: (safeUser.projects || []).map((proj: any) => ({
+    sideProjects: (safeUser.projects || []).map((proj: any) => ({
       id: proj.id,
       title: proj.title,
       period: [proj.startDate, proj.endDate || (proj.isCurrent ? '진행 중' : '')].filter(Boolean).join(' ~ '),
