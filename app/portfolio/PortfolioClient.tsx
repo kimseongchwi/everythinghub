@@ -27,7 +27,7 @@ export default function PortfolioClient({ initialCerts, portfolioData }: Portfol
         <aside className={styles.sidebar}>
           <div className={styles.profileInfo}>
             <h1>{portfolioData.name}</h1>
-            <p>{portfolioData.role}</p>
+            <p>{portfolioData.position}</p>
           </div>
 
           <div className={styles.sidebarSection}>
@@ -36,23 +36,9 @@ export default function PortfolioClient({ initialCerts, portfolioData }: Portfol
               <div className={styles.contactItem}><Mail size={16} />{portfolioData.email}</div>
               <div className={styles.contactItem}><Phone size={16} />{portfolioData.phone}</div>
               <a href={portfolioData.github} target="_blank" className={styles.contactItem} rel="noopener noreferrer">
-                <Github size={16} /> GitHub
+                <Github size={16} />{portfolioData.github}
               </a>
             </div>
-          </div>
-
-          <div className={styles.sidebarSection}>
-            <span className={styles.sidebarLabel}>Skills</span>
-            {portfolioData.skills.map((group: any, i: number) => (
-              <div key={i} className={styles.skillGroup}>
-                <h4 className={styles.skillTitle}>{group.category}</h4>
-                <div className={styles.skillTags}>
-                  {group.items.map((skill: string, j: number) => (
-                    <span key={j} className={styles.skillTag}>{skill}</span>
-                  ))}
-                </div>
-              </div>
-            ))}
           </div>
 
           <div className={styles.sidebarSection}>
@@ -60,8 +46,8 @@ export default function PortfolioClient({ initialCerts, portfolioData }: Portfol
             {portfolioData.education.map((edu: any, i: number) => (
               <div key={i} className={styles.eduItem}>
                 <h3>{edu.school}</h3>
-                <p>{edu.degree}</p>
-                <p style={{ fontSize: '0.8rem', opacity: 0.6 }}>{edu.period}</p>
+                <p>{edu.major} ({edu.degreeStatus})</p>
+                <p className={styles.eduPeriod}>{edu.period}</p>
               </div>
             ))}
           </div>
@@ -71,6 +57,33 @@ export default function PortfolioClient({ initialCerts, portfolioData }: Portfol
         <main className={styles.contentArea}>
           <section>
             <p className={styles.introText}>{portfolioData.description}</p>
+          </section>
+
+          {/* New Prominent Skills Section */}
+          <section className={styles.section}>
+            <h2 className={styles.sectionTitle}>Technical Skills</h2>
+            <div className={styles.skillsMainGrid}>
+              {portfolioData.skills.map((group: any, i: number) => (
+                <div key={i} className={styles.skillCategoryCard}>
+                  <h3 className={styles.skillCategoryTitle}>{group.category}</h3>
+                  <div className={styles.skillItemList}>
+                    {group.items.map((skill: any, j: number) => (
+                      <div key={j} className={styles.skillDetailItem}>
+                        <div className={styles.skillHeaderRow}>
+                          <span className={styles.skillItemName}>{skill.name}</span>
+                          <span className={`${styles.skillLevelBadge} ${styles['level' + skill.level]}`}>
+                            {skill.level}
+                          </span>
+                        </div>
+                        {skill.description && (
+                          <p className={styles.skillItemDesc}>{skill.description}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
           </section>
 
           <section className={styles.section}>
@@ -111,7 +124,13 @@ export default function PortfolioClient({ initialCerts, portfolioData }: Portfol
               {portfolioData.personalProjects.map((proj: any) => (
                 <div key={proj.id} className={styles.projectCard}>
                   <div className={styles.pTitleBox}>
-                    <h3>{proj.title}</h3>
+                    <div>
+                      <div className={styles.pHeaderRow}>
+                        <h3>{proj.title}</h3>
+                        {proj.isFeatured && <span className={styles.featuredBadge}>Featured</span>}
+                      </div>
+                      <span className={styles.pPeriod}>{proj.period}</span>
+                    </div>
                     <div className={styles.pLinks}>
                       <a href={proj.links.github} target="_blank" className={styles.pLink} rel="noreferrer"><Github size={20} /></a>
                       <a href={proj.links.demo} target="_blank" className={styles.pLink} rel="noreferrer"><Globe size={20} /></a>
@@ -149,13 +168,8 @@ export default function PortfolioClient({ initialCerts, portfolioData }: Portfol
                   </div>
                 </div>
               ))}
-              {initialCerts.length === 0 && <p style={{ color: '#94a3b8' }}>등록된 인증 정보가 없습니다.</p>}
             </div>
           </section>
-
-          <footer className={styles.footer}>
-            <p>&copy; {new Date().getFullYear()} {portfolioData.name}. All rights reserved.</p>
-          </footer>
         </main>
       </div>
     </div>

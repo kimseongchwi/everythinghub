@@ -2,22 +2,12 @@ import { put, del } from '@vercel/blob';
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
-// Helper to get or create the main user (since we're in a single-user portfolio context)
+// 메인 사용자 정보 조회 헬퍼
 async function getMainUser() {
-  let user = await prisma.user.findFirst();
-  if (!user) {
-    user = await prisma.user.create({
-      data: {
-        name: '김성취',
-        email: 'seongchwi@gmail.com',
-        role: 'Full-Stack Developer'
-      }
-    });
-  }
-  return user;
+  return await prisma.user.findFirst();
 }
 
-// GET /api/admin?target=...
+// 조회 API (GET)
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const target = searchParams.get('target');
@@ -25,24 +15,33 @@ export async function GET(request: Request) {
   try {
     const user = await getMainUser();
 
+    // 유저가 없는 경우 GET 요청에 대해 빈 데이터 반환 (첨부파일 제외)
+    if (!user && target !== 'attachments') {
+      if (target === 'profile') return NextResponse.json(null);
+      return NextResponse.json([]);
+    }
+
     switch (target) {
       case 'profile':
         const profile = await prisma.user.findUnique({
-          where: { id: user.id },
-          include: { avatar: true }
+          where: { id: user?.id },
+          include: {
+            avatar: true,
+            educations: true
+          }
         });
         return NextResponse.json(profile);
 
       case 'tech':
         const tech = await prisma.techStack.findMany({
-          where: { userId: user.id },
+          where: { userId: user?.id },
           orderBy: { category: 'asc' }
         });
         return NextResponse.json(tech);
 
       case 'work':
         const work = await prisma.workExperience.findMany({
-          where: { userId: user.id },
+          where: { userId: user?.id },
           include: { projects: true },
           orderBy: { createdAt: 'desc' }
         });
@@ -50,7 +49,7 @@ export async function GET(request: Request) {
 
       case 'projects':
         const projects = await prisma.project.findMany({
-          where: { userId: user.id },
+          where: { userId: user?.id },
           include: { thumbnail: true },
           orderBy: { createdAt: 'desc' }
         });
@@ -58,7 +57,7 @@ export async function GET(request: Request) {
 
       case 'certs':
         const data = await prisma.certification.findMany({
-          where: { userId: user.id },
+          where: { userId: user?.id },
           orderBy: { sortOrder: 'asc' },
           include: { attachment: true }
         });
@@ -71,15 +70,15 @@ export async function GET(request: Request) {
         return NextResponse.json(attachments);
 
       default:
-        return NextResponse.json({ error: 'Invalid target' }, { status: 400 });
+        return NextResponse.json({ error: '잘못된 요청 대상입니다.' }, { status: 400 });
     }
   } catch (error) {
-    console.error('FETCH ERROR:', error);
-    return NextResponse.json({ error: 'Fetch failed' }, { status: 500 });
+    console.error('조회 오류:', error);
+    return NextResponse.json({ error: '데이터를 가져오는 데 실패했습니다.' }, { status: 500 });
   }
 }
 
-// POST /api/admin?target=...
+// 생성 및 업데이트 API (POST)
 export async function POST(request: Request) {
   const { searchParams } = new URL(request.url);
   const target = searchParams.get('target');
@@ -88,7 +87,109 @@ export async function POST(request: Request) {
     const user = await getMainUser();
     const body = await request.json();
 
+    if (target === 'profile') {
+      const {
+        name,
+        email,
+        phone,
+        position,
+        github,
+        notion,
+        blog,
+        intro,
+        avatarId,
+        school,
+        major,
+        degreeStatus,
+        startDate,
+        endDate,
+        isCurrent
+      } = body;
+
+      if (!user) {
+        // 새 사용자 생성
+        const newUser = await prisma.user.create({
+          data: {
+            name,
+            email,
+            phone,
+            position,
+            github,
+            notion,
+            blog,
+            intro,
+            avatarId: avatarId || null,
+            educations: {
+              create: {
+                school: school || '',
+                major: major || '',
+                degreeStatus: degreeStatus || '',
+                startDate: startDate || '',
+                endDate: endDate || null,
+                isCurrent: isCurrent || false
+              }
+            }
+          }
+        });
+        return NextResponse.json(newUser);
+      } else {
+        // 기존 사용자 정보 업데이트
+        const updated = await prisma.user.update({
+          where: { id: user.id },
+          data: {
+            name,
+            email,
+            phone,
+            position,
+            github,
+            notion,
+            blog,
+            intro,
+            avatarId: avatarId || null
+          }
+        });
+
+        // 유저의 첫 번째 학력 정보를 찾아 업데이트 혹은 생성
+        const firstEdu = await prisma.education.findFirst({
+          where: { userId: user.id }
+        });
+
+        if (firstEdu) {
+          await prisma.education.update({
+            where: { id: firstEdu.id },
+            data: {
+              school: school || '',
+              major: major || '',
+              degreeStatus: degreeStatus || '',
+              startDate: startDate || '',
+              endDate: endDate || null,
+              isCurrent: isCurrent || false
+            }
+          });
+        } else {
+          await prisma.education.create({
+            data: {
+              school: school || '',
+              major: major || '',
+              degreeStatus: degreeStatus || '',
+              startDate: startDate || '',
+              endDate: endDate || null,
+              isCurrent: isCurrent || false,
+              userId: user.id
+            }
+          });
+        }
+
+        return NextResponse.json(updated);
+      }
+    }
+
+    if (!user && target !== 'attachments') {
+      return NextResponse.json({ error: 'No user found' }, { status: 404 });
+    }
+
     if (target === 'certs') {
+      if (!user) return NextResponse.json({ error: '사용자를 찾을 수 없습니다.' }, { status: 404 });
       const { title, issuer, status, acquiredAt, attachmentId, sortOrder } = body;
       const cert = await prisma.certification.create({
         data: {
@@ -96,25 +197,33 @@ export async function POST(request: Request) {
           issuer,
           status,
           acquiredAt: acquiredAt ? new Date(acquiredAt) : null,
-          sortOrder: sortOrder ? parseInt(sortOrder) : 0,
+          sortOrder: sortOrder ? Number(sortOrder) : 0,
           userId: user.id,
-          ...(attachmentId ? { attachment: { connect: { id: attachmentId } } } : {}),
+          attachmentId: attachmentId || null,
         },
       });
       return NextResponse.json(cert);
     }
 
     if (target === 'tech') {
-      const { name, category, level, description } = body;
+      if (!user) return NextResponse.json({ error: 'No user found' }, { status: 404 });
+      const { name, category, level, description, sortOrder } = body;
       const tech = await prisma.techStack.create({
-        data: { name, category, level, description, userId: user.id }
+        data: {
+          name,
+          category,
+          level,
+          description,
+          sortOrder: sortOrder ? Number(sortOrder) : 0,
+          userId: user.id
+        }
       });
       return NextResponse.json(tech);
     }
 
     if (target === 'attachments') {
       const filename = searchParams.get('filename');
-      if (!filename || !request.body) return NextResponse.json({ error: 'Missing file data' }, { status: 400 });
+      if (!filename || !request.body) return NextResponse.json({ error: '파일 데이터가 누락되었습니다.' }, { status: 400 });
 
       const blob = await put(`attachments/${filename}`, request.body, {
         access: 'public',
@@ -133,32 +242,88 @@ export async function POST(request: Request) {
       return NextResponse.json(attachment);
     }
 
-    return NextResponse.json({ error: 'Invalid target' }, { status: 400 });
+    return NextResponse.json({ error: '잘못된 요청 대상입니다.' }, { status: 400 });
   } catch (error: any) {
-    console.error('API POST ERROR:', error);
+    console.error('API 생성 오류:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 
-// PATCH /api/admin?target=...&id=...
+// 상세 수정 API (PATCH)
 export async function PATCH(request: Request) {
   const { searchParams } = new URL(request.url);
   const target = searchParams.get('target');
   const id = searchParams.get('id');
-  if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 });
+  if (!id) return NextResponse.json({ error: '대상 ID가 필요합니다.' }, { status: 400 });
 
   try {
     const body = await request.json();
 
     if (target === 'profile') {
-      const { name, email, phone, role, github, notion, blog, intro, avatarId } = body;
+      const {
+        name,
+        email,
+        phone,
+        position,
+        github,
+        notion,
+        blog,
+        intro,
+        avatarId,
+        school,
+        major,
+        degreeStatus,
+        startDate,
+        endDate,
+        isCurrent
+      } = body;
+
       const updated = await prisma.user.update({
         where: { id },
         data: {
-          name, email, phone, role, github, notion, blog, intro,
-          avatar: avatarId ? { connect: { id: avatarId } } : undefined
+          name,
+          email,
+          phone,
+          position,
+          github,
+          notion,
+          blog,
+          intro,
+          avatarId: avatarId || null
         }
       });
+
+      // 학력 정보 업데이트
+      const firstEdu = await prisma.education.findFirst({
+        where: { userId: id }
+      });
+
+      if (firstEdu) {
+        await prisma.education.update({
+          where: { id: firstEdu.id },
+          data: {
+            school: school || '',
+            major: major || '',
+            degreeStatus: degreeStatus || '',
+            startDate: startDate || '',
+            endDate: endDate || null,
+            isCurrent: isCurrent || false
+          }
+        });
+      } else {
+        await prisma.education.create({
+          data: {
+            school: school || '',
+            major: major || '',
+            degreeStatus: degreeStatus || '',
+            startDate: startDate || '',
+            endDate: endDate || null,
+            isCurrent: isCurrent || false,
+            userId: id
+          }
+        });
+      }
+
       return NextResponse.json(updated);
     }
 
@@ -171,21 +336,21 @@ export async function PATCH(request: Request) {
           issuer,
           status,
           acquiredAt: acquiredAt ? new Date(acquiredAt) : null,
-          sortOrder: sortOrder ? parseInt(sortOrder) : 0,
-          attachment: attachmentId ? { connect: { id: attachmentId } } : { disconnect: true },
+          sortOrder: sortOrder ? Number(sortOrder) : 0,
+          attachmentId: attachmentId || null,
         },
       });
       return NextResponse.json(updated);
     }
 
-    return NextResponse.json({ error: 'Invalid target' }, { status: 400 });
+    return NextResponse.json({ error: '잘못된 요청 대상입니다.' }, { status: 400 });
   } catch (error: any) {
-    console.error('API PATCH ERROR:', error);
+    console.error('API 수정 오류:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 
-// DELETE /api/admin?target=...&id=...
+// 삭제 API (DELETE)
 export async function DELETE(request: Request) {
   const { searchParams } = new URL(request.url);
   const target = searchParams.get('target');
@@ -209,11 +374,11 @@ export async function DELETE(request: Request) {
         }
         break;
       default:
-        return NextResponse.json({ error: 'Invalid target' }, { status: 400 });
+        return NextResponse.json({ error: '잘못된 요청 대상입니다.' }, { status: 400 });
     }
     return NextResponse.json({ success: true });
   } catch (error: any) {
-    console.error('API DELETE ERROR:', error);
+    console.error('API 삭제 오류:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
