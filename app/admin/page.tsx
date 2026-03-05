@@ -10,7 +10,6 @@ import {
   Copy,
   File as FileIcon,
   Award,
-  UploadCloud,
   ExternalLink,
   User,
   Save,
@@ -18,10 +17,8 @@ import {
   Briefcase,
   FolderOpen,
   Github,
-  Globe,
   Code2,
   Cpu,
-  CheckCircle2,
   Loader2
 } from 'lucide-react';
 
@@ -414,6 +411,20 @@ export default function AdminPage() {
     }
   };
 
+  const handleCertEdit = (cert: any) => {
+    setFormData({
+      title: cert.title,
+      issuer: cert.issuer,
+      status: cert.status,
+      acquiredAt: cert.acquiredAt || '',
+      attachmentId: cert.attachmentId || '',
+      fileUrl: cert.attachment?.url || cert.fileUrl || '',
+      sortOrder: cert.sortOrder
+    });
+    setEditingCertId(cert.id);
+    setIsAddingCert(true);
+  };
+
   const handleWorkSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const url = editingWorkId ? `/api/admin?target=work&id=${editingWorkId}` : '/api/admin?target=work';
@@ -707,11 +718,6 @@ export default function AdminPage() {
                     activeTab === 'side' ? '사이드 프로젝트 관리' :
                       activeTab === 'cert' ? '자격증 및 수상 관리' : '전체 파일 관리'}
             </h1>
-            <p>
-              {activeTab === 'media'
-                ? '서버에 저장된 모든 미디어 및 첨부 파일을 관리합니다.'
-                : '프로필 정보와 핵심 역량을 최신 상태로 관리하세요.'}
-            </p>
           </div>
         </header>
 
@@ -1136,7 +1142,22 @@ export default function AdminPage() {
                             </td>
                             <td style={{ padding: '12px 0' }}>{cert.status}</td>
                             <td style={{ padding: '12px 0', textAlign: 'right' }}>
-                              <button className="text-gray-300 hover:text-red-500" style={{ color: '#cbd5e0', background: 'none', border: 'none', cursor: 'pointer' }} onClick={() => handleCertDelete(cert.id)}><Trash2 size={14} /></button>
+                              <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                                <button
+                                  className="text-gray-300 hover:text-blue-500"
+                                  style={{ color: '#cbd5e0', background: 'none', border: 'none', cursor: 'pointer' }}
+                                  onClick={() => handleCertEdit(cert)}
+                                >
+                                  <Edit size={14} />
+                                </button>
+                                <button
+                                  className="text-gray-300 hover:text-red-500"
+                                  style={{ color: '#cbd5e0', background: 'none', border: 'none', cursor: 'pointer' }}
+                                  onClick={() => handleCertDelete(cert.id)}
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         ))}
