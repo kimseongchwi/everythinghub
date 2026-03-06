@@ -13,6 +13,7 @@ import {
   Briefcase,
   GraduationCap
 } from 'lucide-react';
+import TechIcon from '@/components/TechIcon';
 
 interface PortfolioClientProps {
   initialCerts: any[];
@@ -33,8 +34,12 @@ export default function PortfolioClient({ initialCerts, portfolioData }: Portfol
           <div className={styles.sidebarSection}>
             <span className={styles.sidebarLabel}>About</span>
             <div className={styles.contactList}>
-              <div className={styles.contactItem}><Mail size={16} />{portfolioData.email}</div>
-              <div className={styles.contactItem}><Phone size={16} />{portfolioData.phone}</div>
+              <a href={`mailto:${portfolioData.email}`} className={styles.contactItem}>
+                <Mail size={16} />{portfolioData.email}
+              </a>
+              <a href={`tel:${portfolioData.phone}`} className={styles.contactItem}>
+                <Phone size={16} />{portfolioData.phone}
+              </a>
               <a href={portfolioData.github} target="_blank" className={styles.contactItem} rel="noopener noreferrer">
                 <Github size={16} />{portfolioData.github}
               </a>
@@ -70,6 +75,7 @@ export default function PortfolioClient({ initialCerts, portfolioData }: Portfol
                     {group.items.map((skill: any, j: number) => (
                       <div key={j} className={styles.skillDetailItem}>
                         <div className={styles.skillHeaderRow}>
+                          <TechIcon name={skill.name} size={18} />
                           <span className={styles.skillItemName}>{skill.name}</span>
                         </div>
                         {skill.description && (
@@ -104,7 +110,10 @@ export default function PortfolioClient({ initialCerts, portfolioData }: Portfol
                         </ul>
                         <div className={styles.skillTags}>
                           {proj.techStack.map((tech: string, k: number) => (
-                            <span key={k} className={styles.skillTag} style={{ background: '#eff6ff', color: '#3182ce' }}>#{tech}</span>
+                            <span key={k} className={styles.skillTag} style={{ background: '#eff6ff', color: '#3182ce', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <TechIcon name={tech} size={12} />
+                              #{tech}
+                            </span>
                           ))}
                         </div>
                       </div>
@@ -136,7 +145,10 @@ export default function PortfolioClient({ initialCerts, portfolioData }: Portfol
                   <p className={styles.pDesc}>{proj.description}</p>
                   <div className={styles.skillTags}>
                     {proj.techStack.map((tech: string, j: number) => (
-                      <span key={j} className={styles.skillTag}>#{tech}</span>
+                      <span key={j} className={styles.skillTag} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <TechIcon name={tech} size={12} />
+                        #{tech}
+                      </span>
                     ))}
                   </div>
                 </div>
@@ -155,7 +167,7 @@ export default function PortfolioClient({ initialCerts, portfolioData }: Portfol
                   </div>
                   <div className={styles.certRight}>
                     <span className={styles.certDateBadge}>
-                      {cert.acquiredAt ? new Date(cert.acquiredAt).getFullYear() : '—'}
+                      {cert.acquiredAt || '—'}
                     </span>
                     {cert.attachment?.url && (
                       <a href={cert.attachment.url} target="_blank" className={styles.certFileBtn} rel="noreferrer">

@@ -98,9 +98,9 @@ export async function POST(request: Request) {
         phone,
         position,
         github,
-        notion,
         blog,
         intro,
+        privateMemo,
         avatarId,
         school,
         major,
@@ -119,7 +119,7 @@ export async function POST(request: Request) {
             phone,
             position,
             github,
-            notion,
+            privateMemo,
             blog,
             intro,
             avatarId: avatarId || null,
@@ -146,9 +146,9 @@ export async function POST(request: Request) {
             phone,
             position,
             github,
-            notion,
             blog,
             intro,
+            privateMemo,
             avatarId: avatarId || null
           }
         });
@@ -201,7 +201,7 @@ export async function POST(request: Request) {
           title,
           issuer,
           status,
-          acquiredAt: acquiredAt ? new Date(acquiredAt) : null,
+          acquiredAt: acquiredAt || null,
           sortOrder: sortOrder ? Number(sortOrder) : 0,
           userId: user.id,
           attachmentId: attachmentId || null,
@@ -309,21 +309,21 @@ export async function PATCH(request: Request) {
   const { searchParams } = new URL(request.url);
   const target = searchParams.get('target');
   const id = searchParams.get('id');
-  if (!id) return NextResponse.json({ error: '대상 ID가 필요합니다.' }, { status: 400 });
 
   try {
     const body = await request.json();
 
     if (target === 'profile') {
+      if (!id) return NextResponse.json({ error: '대상 ID가 필요합니다.' }, { status: 400 });
       const {
         name,
         email,
         phone,
         position,
         github,
-        notion,
         blog,
         intro,
+        privateMemo,
         avatarId,
         school,
         major,
@@ -341,9 +341,9 @@ export async function PATCH(request: Request) {
           phone,
           position,
           github,
-          notion,
           blog,
           intro,
+          privateMemo,
           avatarId: avatarId || null
         }
       });
@@ -383,6 +383,7 @@ export async function PATCH(request: Request) {
     }
 
     if (target === 'certs') {
+      if (!id) return NextResponse.json({ error: 'ID가 필요합니다.' }, { status: 400 });
       const { title, issuer, status, acquiredAt, attachmentId, sortOrder } = body;
       const updated = await prisma.certification.update({
         where: { id },
@@ -390,7 +391,7 @@ export async function PATCH(request: Request) {
           title,
           issuer,
           status,
-          acquiredAt: acquiredAt ? new Date(acquiredAt) : null,
+          acquiredAt: acquiredAt || null,
           sortOrder: sortOrder ? Number(sortOrder) : 0,
           attachmentId: attachmentId || null,
         },
@@ -399,6 +400,7 @@ export async function PATCH(request: Request) {
     }
 
     if (target === 'tech') {
+      if (!id) return NextResponse.json({ error: 'ID가 필요합니다.' }, { status: 400 });
       const { name, category, description, sortOrder } = body;
       const updated = await prisma.techStack.update({
         where: { id },
@@ -413,6 +415,7 @@ export async function PATCH(request: Request) {
     }
 
     if (target === 'work') {
+      if (!id) return NextResponse.json({ error: 'ID가 필요합니다.' }, { status: 400 });
       const { companyName, role, startDate, endDate, isCurrent, summary, description, sortOrder } = body;
       const updated = await prisma.workExperience.update({
         where: { id },
@@ -430,7 +433,30 @@ export async function PATCH(request: Request) {
       return NextResponse.json(updated);
     }
 
+    if (target === 'reorder') {
+      const { type, items } = body; // type is 'certs', 'tech', 'work', 'projects', items is [{id, sortOrder}]
+      
+      const updates = items.map((item: any) => {
+        const model = 
+          type === 'certs' ? prisma.certification :
+          type === 'tech' ? prisma.techStack :
+          type === 'work' ? prisma.workExperience :
+          type === 'projects' ? prisma.project : null;
+        
+        if (!model) return null;
+        // @ts-ignore - dynamic model access
+        return model.update({
+          where: { id: item.id },
+          data: { sortOrder: item.sortOrder }
+        });
+      }).filter(Boolean);
+
+      await Promise.all(updates);
+      return NextResponse.json({ success: true });
+    }
+
     if (target === 'projects') {
+      if (!id) return NextResponse.json({ error: 'ID가 필요합니다.' }, { status: 400 });
       const { title, description, techStack, githubUrl, demoUrl, thumbnailId, sortOrder, content, startDate, endDate, isCurrent, isFeatured, keyFeatures } = body;
       const updated = await prisma.project.update({
         where: { id },

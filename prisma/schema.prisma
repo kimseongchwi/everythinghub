@@ -10,15 +10,15 @@ datasource db {
 
 // 사용자 프로필 정보
 model User {
-  id       String  @id @default(uuid())
-  name     String // 이름
-  position String? // 전문 분야 / 지향하는 포지션 (예: Full-Stack Developer)
-  email    String  @unique
-  phone    String? // 연락처
-  github   String? // 깃허브 URL
-  notion   String? // 노션 URL
-  blog     String? // 블로그 URL
-  intro    String? @db.Text // 자기소개 (인사말)
+  id          String  @id @default(uuid())
+  name        String // 이름
+  position    String? // 전문 분야 / 지향하는 포지션 (예: Full-Stack Developer)
+  email       String  @unique
+  phone       String? // 연락처
+  github      String? // 깃허브 URL
+  blog        String? // 블로그 URL
+  intro       String? @db.Text // 자기소개 (인사말)
+  privateMemo String? @db.Text // 개인 메모 (포트폴리오 비노출)
 
   // 프로필 사진
   avatarId String?     @unique
@@ -124,12 +124,12 @@ model TechStack {
 
 // 자격증 및 수상 (Certifications & Awards)
 model Certification {
-  id         String    @id @default(uuid())
+  id         String  @id @default(uuid())
   title      String // 명칭
   issuer     String // 발행처
   status     String // 상태 (취득완료, 준비중, 만료 등)
-  acquiredAt DateTime? // 취득 일자
-  sortOrder  Int       @default(0)
+  acquiredAt String? // 취득 일자 (예: 2024.01)
+  sortOrder  Int     @default(0)
 
   userId String?
   user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)

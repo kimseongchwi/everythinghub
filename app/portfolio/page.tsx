@@ -72,7 +72,7 @@ export default async function PortfolioPage() {
     email: safeUser.email,
     phone: safeUser.phone,
     github: safeUser.github,
-    blog: safeUser.notion || safeUser.blog,
+    blog: safeUser.blog,
     description: safeUser.intro,
     education: (safeUser.educations || []).map((edu: any) => ({
       school: edu.school,
