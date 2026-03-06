@@ -111,10 +111,11 @@ export default async function PortfolioPage() {
       id: proj.id,
       title: proj.title,
       period: [proj.startDate, proj.endDate || (proj.isCurrent ? '진행 중' : '')].filter(Boolean).join(' ~ '),
+      status: proj.status,
       description: proj.description,
       content: proj.content,
       techStack: proj.techStack,
-      isFeatured: proj.isFeatured,
+      isVisible: proj.isVisible,
       links: {
         github: proj.githubLink || '#',
         demo: proj.demoLink || '#'

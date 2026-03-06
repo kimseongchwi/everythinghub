@@ -133,7 +133,10 @@ export default function PortfolioClient({ initialCerts, portfolioData }: Portfol
                     <div>
                       <div className={styles.pHeaderRow}>
                         <h3>{proj.title}</h3>
-                        {proj.isFeatured && <span className={styles.featuredBadge}>Featured</span>}
+                        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                          {proj.status && <span className={styles.statusBadge}>{proj.status}</span>}
+                          {proj.isVisible && <span className={styles.featuredBadge}>Show</span>}
+                        </div>
                       </div>
                       <span className={styles.pPeriod}>{proj.period}</span>
                     </div>

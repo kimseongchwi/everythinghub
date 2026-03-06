@@ -300,6 +300,17 @@
   font-weight: 500;
 }
 
+.statusBadge {
+  font-size: 0.65rem;
+  font-weight: 900;
+  background: #f0fdf4;
+  color: #166534;
+  padding: 2px 8px;
+  border-radius: 99px;
+  text-transform: uppercase;
+  border: 1px solid #bbf7d0;
+}
+
 .pLinks {
   display: flex;
   gap: 12px;

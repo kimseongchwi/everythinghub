@@ -271,13 +271,31 @@ export default function ProfileAdminPage() {
               </div>
               <div className={styles.field}>
                 <label>재학 종료 (졸업일)</label>
-                <input
-                  type="text"
-                  className={styles.input}
-                  placeholder="예: 2024.02"
-                  value={profile.endDate}
-                  onChange={(e) => setProfile({ ...profile, endDate: e.target.value })}
-                />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <input
+                    type="text"
+                    className={styles.input}
+                    placeholder="예: 2024.02"
+                    value={profile.endDate}
+                    onChange={(e) => setProfile({ ...profile, endDate: e.target.value, isCurrent: false })}
+                    disabled={profile.isCurrent}
+                    style={{ 
+                      background: profile.isCurrent ? '#f8fafc' : '#fafafa',
+                      color: profile.isCurrent ? '#94a3b8' : '#1e293b',
+                      cursor: profile.isCurrent ? 'not-allowed' : 'text',
+                      borderColor: profile.isCurrent ? '#e2e8f0' : '#eaeaea',
+                      opacity: profile.isCurrent ? 0.7 : 1
+                    }}
+                  />
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, color: '#64748b' }}>
+                    <input 
+                      type="checkbox" 
+                      checked={profile.isCurrent} 
+                      onChange={e => setProfile({ ...profile, isCurrent: e.target.checked })}
+                    />
+                    재학 중 (또는 휴학)
+                  </label>
+                </div>
               </div>
             </div>
 

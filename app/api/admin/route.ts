@@ -229,11 +229,12 @@ export async function POST(request: Request) {
     if (target === 'work') {
       if (!user) return NextResponse.json({ error: '사용자를 찾을 수 없습니다.' }, { status: 404 });
       const body = await request.json();
-      const { companyName, role, startDate, endDate, isCurrent, summary, description, sortOrder } = body;
+      const { companyName, role, position, startDate, endDate, isCurrent, summary, description, sortOrder } = body;
       const work = await prisma.workExperience.create({
         data: {
           companyName,
           role,
+          position,
           startDate,
           endDate,
           isCurrent: isCurrent || false,
@@ -274,16 +275,17 @@ export async function POST(request: Request) {
     if (target === 'projects') {
       if (!user) return NextResponse.json({ error: '사용자를 찾을 수 없습니다.' }, { status: 404 });
       const body = await request.json();
-      const { title, description, techStack, githubUrl, demoUrl, thumbnailId, sortOrder, workExperienceId, content, startDate, endDate, isCurrent, isFeatured, keyFeatures } = body;
+      const { title, description, techStack, githubUrl, demoUrl, thumbnailId, sortOrder, workExperienceId, content, startDate, endDate, isCurrent, isVisible, keyFeatures, status } = body;
       const project = await prisma.project.create({
         data: {
           title,
           description,
           content,
+          status,
           startDate,
           endDate,
           isCurrent: isCurrent || false,
-          isFeatured: isFeatured || false,
+          isVisible: isVisible || false,
           techStack: Array.isArray(techStack) ? techStack : (techStack ? techStack.split(',').map((s: string) => s.trim()) : []),
           keyFeatures: Array.isArray(keyFeatures) ? keyFeatures : [],
           githubLink: githubUrl,
@@ -416,12 +418,13 @@ export async function PATCH(request: Request) {
 
     if (target === 'work') {
       if (!id) return NextResponse.json({ error: 'ID가 필요합니다.' }, { status: 400 });
-      const { companyName, role, startDate, endDate, isCurrent, summary, description, sortOrder } = body;
+      const { companyName, role, position, startDate, endDate, isCurrent, summary, description, sortOrder } = body;
       const updated = await prisma.workExperience.update({
         where: { id },
         data: {
           companyName,
           role,
+          position,
           startDate,
           endDate,
           isCurrent: isCurrent || false,
@@ -457,17 +460,18 @@ export async function PATCH(request: Request) {
 
     if (target === 'projects') {
       if (!id) return NextResponse.json({ error: 'ID가 필요합니다.' }, { status: 400 });
-      const { title, description, techStack, githubUrl, demoUrl, thumbnailId, sortOrder, content, startDate, endDate, isCurrent, isFeatured, keyFeatures } = body;
+      const { title, description, techStack, githubUrl, demoUrl, thumbnailId, sortOrder, content, startDate, endDate, isCurrent, isVisible, keyFeatures, status } = body;
       const updated = await prisma.project.update({
         where: { id },
         data: {
           title,
           description,
           content,
+          status,
           startDate,
           endDate,
           isCurrent: isCurrent || false,
-          isFeatured: isFeatured || false,
+          isVisible: isVisible || false,
           techStack: Array.isArray(techStack) ? techStack : (techStack ? techStack.split(',').map((s: string) => s.trim()) : []),
           keyFeatures: Array.isArray(keyFeatures) ? keyFeatures : [],
           githubLink: githubUrl,

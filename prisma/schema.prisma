@@ -57,7 +57,8 @@ model Education {
 model WorkExperience {
   id          String  @id @default(uuid())
   companyName String // 회사명
-  role        String // 담당 역할 (직책)
+  role        String // 담당 역할
+  position    String? // 직책 (예: 팀장, 대리 등)
   startDate   String // 입사일
   endDate     String? // 퇴사일
   isCurrent   Boolean @default(false) // 재직 중 여부
@@ -81,10 +82,11 @@ model Project {
   title       String // 프로젝트 명칭
   description String?  @db.Text // 프로젝트 한줄 설명
   content     String?  @db.Text // 상세 설명/회고 (메인 콘텐츠)
+  status      String? // 프로젝트 진행 상태 (예: 제작 중, 유지보수 중, 완료)
   startDate   String? // 시작일
   endDate     String? // 종료일
   isCurrent   Boolean  @default(false) // 진행 중 프로젝트 여부
-  isFeatured  Boolean  @default(false) // 포트폴리오 메인 노출 여부
+  isVisible   Boolean  @default(false) // 포트폴리오 노출 여부
   techStack   String[] // 사용 기술 태그 리스트
   keyFeatures String[] // 주요 기능 및 성과 (불렛 포인트용)
   githubLink  String? // 소스 코드 링크

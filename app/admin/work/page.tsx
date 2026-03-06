@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Briefcase, Edit, Trash2, Loader2, Calendar } from 'lucide-react';
 import styles from '@/app/admin/admin.module.css';
 import { AdminPageWrapper, LoadingState, EmptyState, Modal } from '@/components/admin/AdminComponents';
-import CustomDatePicker from '@/components/CustomDatePicker';
 
 export default function WorkAdminPage() {
   const [workExperiences, setWorkExperiences] = useState<any[]>([]);
@@ -16,9 +15,11 @@ export default function WorkAdminPage() {
   const [formData, setFormData] = useState({
     companyName: '',
     role: '',
+    position: '',
     startDate: '',
     endDate: '',
     isCurrent: false,
+    summary: '',
     description: '',
     sortOrder: 0
   });
@@ -57,7 +58,7 @@ export default function WorkAdminPage() {
         alert(editingWorkId ? '경력이 수정되었습니다.' : '새 경력이 등록되었습니다.');
         setIsAddingWork(false);
         setEditingWorkId(null);
-        setFormData({ companyName: '', role: '', startDate: '', endDate: '', isCurrent: false, description: '', sortOrder: 0 });
+        setFormData({ companyName: '', role: '', position: '', startDate: '', endDate: '', isCurrent: false, summary: '', description: '', sortOrder: 0 });
         fetchWorkExperiences();
       } else {
         const error = await res.json();
@@ -83,9 +84,11 @@ export default function WorkAdminPage() {
     setFormData({
       companyName: work.companyName,
       role: work.role,
+      position: work.position || '',
       startDate: work.startDate || '',
       endDate: work.endDate || '',
       isCurrent: work.isCurrent || false,
+      summary: work.summary || '',
       description: work.description || '',
       sortOrder: work.sortOrder
     });
@@ -108,7 +111,7 @@ export default function WorkAdminPage() {
               onClick={() => {
                 setIsAddingWork(true);
                 setEditingWorkId(null);
-                setFormData({ companyName: '', role: '', startDate: '', endDate: '', isCurrent: false, description: '', sortOrder: workExperiences.length });
+                setFormData({ companyName: '', role: '', position: '', startDate: '', endDate: '', isCurrent: false, summary: '', description: '', sortOrder: workExperiences.length });
               }}
             >
               <Plus size={14} /> 경력 등록
@@ -124,7 +127,9 @@ export default function WorkAdminPage() {
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                           <div>
                             <h4 style={{ margin: '0 0 4px 0', fontSize: '1rem', fontWeight: 700 }}>{work.companyName}</h4>
-                            <p style={{ margin: 0, fontSize: '0.9rem', color: '#10b981', fontWeight: 600 }}>{work.role}</p>
+                            <p style={{ margin: 0, fontSize: '0.9rem', color: '#10b981', fontWeight: 600 }}>
+                              {work.position && `${work.position} | `}{work.role}
+                            </p>
                           </div>
                           <div style={{ display: 'flex', gap: '8px' }}>
                             <button className={styles.btnIcon} onClick={() => handleWorkEdit(work)}><Edit size={14} /></button>
@@ -135,7 +140,8 @@ export default function WorkAdminPage() {
                           <Calendar size={12} />
                           <span>{work.startDate} ~ {work.isCurrent ? '현재' : work.endDate}</span>
                         </div>
-                        <p style={{ marginTop: '16px', fontSize: '0.85rem', color: '#64748b', whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>{work.description}</p>
+                        {work.summary && <p style={{ marginTop: '12px', fontSize: '0.85rem', color: '#1e293b', fontWeight: 600 }}>{work.summary}</p>}
+                        <p style={{ marginTop: '12px', fontSize: '0.85rem', color: '#64748b', whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>{work.description}</p>
                       </div>
                     </div>
                   ))
@@ -143,7 +149,7 @@ export default function WorkAdminPage() {
                   <EmptyState message="등록된 근무 경력이 없습니다." onAdd={() => {
                     setIsAddingWork(true);
                     setEditingWorkId(null);
-                    setFormData({ companyName: '', role: '', startDate: '', endDate: '', isCurrent: false, description: '', sortOrder: workExperiences.length });
+                    setFormData({ companyName: '', role: '', position: '', startDate: '', endDate: '', isCurrent: false, summary: '', description: '', sortOrder: workExperiences.length });
                   }} />
                 )}
               </div>
@@ -160,27 +166,44 @@ export default function WorkAdminPage() {
                 <label>회사명</label>
                 <input className={styles.input} placeholder="예: (주)에이비씨 컴퍼니" value={formData.companyName} onChange={e => setFormData({ ...formData, companyName: e.target.value })} required />
               </div>
-              <div className={styles.field}>
-                <label>직무 (포지션)</label>
-                <input className={styles.input} placeholder="예: 프론트엔드 개발자" value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value })} required />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div className={styles.field}>
+                  <label>직책 (타이틀)</label>
+                  <input className={styles.input} placeholder="예: 팀장, 과장, 수석" value={formData.position} onChange={e => setFormData({ ...formData, position: e.target.value })} />
+                </div>
+                <div className={styles.field}>
+                  <label>담당 역할 (포지션)</label>
+                  <input className={styles.input} placeholder="예: 프론트엔드 개발자" value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value })} required />
+                </div>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <div className={styles.field}>
                   <label>입사일</label>
-                  <CustomDatePicker
+                  <input 
+                    type="text"
+                    className={styles.input}
+                    placeholder="예: 2020.03"
                     value={formData.startDate}
-                    onChange={(val) => setFormData({ ...formData, startDate: val })}
-                    placeholder="YYYY.MM"
+                    onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
                   />
                 </div>
                 <div className={styles.field}>
                   <label>퇴사일 (재직 중인 경우 생략)</label>
-                  <CustomDatePicker
+                  <input 
+                    type="text"
+                    className={styles.input}
+                    placeholder="예: 2024.02"
                     value={formData.endDate}
-                    onChange={(val) => setFormData({ ...formData, endDate: val })}
-                    placeholder="YYYY.MM"
+                    onChange={(e) => setFormData({ ...formData, endDate: e.target.value, isCurrent: false })}
                     disabled={formData.isCurrent}
+                    style={{ 
+                      background: formData.isCurrent ? '#f8fafc' : '#fafafa',
+                      color: formData.isCurrent ? '#94a3b8' : '#1e293b',
+                      cursor: formData.isCurrent ? 'not-allowed' : 'text',
+                      borderColor: formData.isCurrent ? '#e2e8f0' : '#eaeaea',
+                      opacity: formData.isCurrent ? 0.7 : 1
+                    }}
                   />
                   <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px', cursor: 'pointer', fontSize: '0.8rem' }}>
                     <input type="checkbox" checked={formData.isCurrent} onChange={e => setFormData({ ...formData, isCurrent: e.target.checked })} />
