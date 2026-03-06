@@ -86,7 +86,7 @@ model Project {
   startDate   String? // 시작일
   endDate     String? // 종료일
   isCurrent   Boolean  @default(false) // 진행 중 프로젝트 여부
-  isVisible   Boolean  @default(false) // 포트폴리오 노출 여부
+  isVisible   Boolean  @default(false) // 포트폴리오에 공개
   techStack   String[] // 사용 기술 태그 리스트
   keyFeatures String[] // 주요 기능 및 성과 (불렛 포인트용)
   githubLink  String? // 소스 코드 링크
@@ -115,6 +115,7 @@ model TechStack {
   name        String // 기술명 (예: React)
   category    String // 카테고리 (Frontend, Backend, Database, DevOps 등)
   description String? @db.Text // 해당 기술을 어떻게 사용하는지 설명
+  isVisible   Boolean @default(false) // 포트폴리오에 공개
   sortOrder   Int     @default(0) // 노출 순서
 
   userId String

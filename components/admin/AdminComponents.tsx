@@ -56,7 +56,19 @@ export const LoadingState = () => (
 );
 
 // 공통 모달 컴포넌트
-export const Modal = ({ isOpen, onClose, title, children }: { isOpen: boolean, onClose: () => void, title: string, children: React.ReactNode }) => {
+export const Modal = ({ 
+  isOpen, 
+  onClose, 
+  title, 
+  children,
+  footer
+}: { 
+  isOpen: boolean, 
+  onClose: () => void, 
+  title: string, 
+  children: React.ReactNode,
+  footer?: React.ReactNode
+}) => {
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -75,25 +87,77 @@ export const Modal = ({ isOpen, onClose, title, children }: { isOpen: boolean, o
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
-          <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 800 }}>{title}</h2>
+        <div className={styles.modalHeader}>
+          <h2>{title}</h2>
           <button
             onClick={onClose}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', padding: '4px' }}
+            className={styles.btnIcon}
+            style={{ border: 'none', background: '#f1f5f9' }}
           >
-            <Plus size={24} style={{ transform: 'rotate(45deg)' }} />
+            <Plus size={20} style={{ transform: 'rotate(45deg)' }} />
           </button>
         </div>
-        {children}
+        <div className={styles.modalBody}>
+          {children}
+        </div>
+        {footer && (
+          <div className={styles.modalFooter}>
+            {footer}
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
+// 토스트 알림 컴포넌트
+export const Toast = ({ message, type = 'success', onClose }: { message: string, type?: 'success' | 'error' | 'info', onClose: () => void }) => {
+  useEffect(() => {
+    const timer = setTimeout(onClose, 3000);
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  const bg = type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6';
+
+  return (
+    <div style={{
+      position: 'fixed',
+      bottom: '40px',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      backgroundColor: bg,
+      color: '#fff',
+      padding: '12px 24px',
+      borderRadius: '12px',
+      boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.2)',
+      fontWeight: 600,
+      fontSize: '0.9rem',
+      zIndex: 2000,
+      display: 'flex',
+      alignItems: 'center',
+      gap: '10px',
+      animation: 'slideUp 0.3s ease-out'
+    }}>
+      <style>{`
+        @keyframes slideUp {
+          from { transform: translate(-50%, 20px); opacity: 0; }
+          to { transform: translate(-50%, 0); opacity: 1; }
+        }
+      `}</style>
+      <span>{message}</span>
+    </div>
+  );
+};
+
 // 프로필 체크를 위한 래퍼 컴포넌트
-export const AdminPageWrapper = ({ children }: { children: (profile: any) => React.ReactNode }) => {
+export const AdminPageWrapper = ({ children }: { children: (profile: any, showToast: (msg: string, type?: 'success' | 'error' | 'info') => void) => React.ReactNode }) => {
   const [profile, setProfile] = React.useState<any>(null);
   const [loading, setLoading] = React.useState(true);
+  const [toast, setToast] = React.useState<{ message: string, type: 'success' | 'error' | 'info' } | null>(null);
+
+  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
+    setToast({ message, type });
+  };
 
   React.useEffect(() => {
     const fetchProfile = async () => {
@@ -123,5 +187,10 @@ export const AdminPageWrapper = ({ children }: { children: (profile: any) => Rea
     );
   }
 
-  return <>{children(profile)}</>;
+  return (
+    <>
+      {children(profile, showToast)}
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+    </>
+  );
 };

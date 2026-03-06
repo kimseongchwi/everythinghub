@@ -22,17 +22,25 @@ export default async function PortfolioPage() {
         },
         workExperiences: {
           include: {
-            projects: true
+            projects: {
+              where: { isVisible: true },
+              include: { thumbnail: true }
+            }
           },
           orderBy: { createdAt: 'desc' }
         },
         projects: {
           where: {
-            workExperienceId: null
+            workExperienceId: null,
+            isVisible: true
           },
+          include: { thumbnail: true },
           orderBy: { createdAt: 'desc' }
         },
-        techStacks: true,
+        techStacks: {
+          where: { isVisible: true },
+          orderBy: { sortOrder: 'asc' }
+        },
         certifications: {
           include: {
             attachment: true
@@ -99,28 +107,49 @@ export default async function PortfolioPage() {
       role: work.role,
       summary: work.summary,
       description: work.description,
-      projects: (work.projects || []).map((proj: any) => ({
+      projects: (work.projects || []).map((proj: any) => {
+        const categoryOrder = ['Frontend', 'Backend', 'Database', 'Infra/DevOps', 'ORM', 'ETC'];
+        const sortedTechs = [...(proj.techStack || [])].sort((a, b) => {
+          const catA = safeUser.techStacks.find((t: any) => t.name === a)?.category || 'ETC';
+          const catB = safeUser.techStacks.find((t: any) => t.name === b)?.category || 'ETC';
+          const indexA = categoryOrder.indexOf(catA);
+          const indexB = categoryOrder.indexOf(catB);
+          return (indexA > -1 ? indexA : 99) - (indexB > -1 ? indexB : 99);
+        });
+        return {
+          id: proj.id,
+          title: proj.title,
+          description: proj.description,
+          techStack: sortedTechs,
+          keyFeatures: proj.keyFeatures
+        };
+      })
+    })),
+    sideProjects: (safeUser.projects || []).map((proj: any) => {
+      const categoryOrder = ['Frontend', 'Backend', 'Database', 'Infra/DevOps', 'ORM', 'ETC'];
+      const sortedTechs = [...(proj.techStack || [])].sort((a, b) => {
+        const catA = safeUser.techStacks.find((t: any) => t.name === a)?.category || 'ETC';
+        const catB = safeUser.techStacks.find((t: any) => t.name === b)?.category || 'ETC';
+        const indexA = categoryOrder.indexOf(catA);
+        const indexB = categoryOrder.indexOf(catB);
+        return (indexA > -1 ? indexA : 99) - (indexB > -1 ? indexB : 99);
+      });
+      return {
         id: proj.id,
         title: proj.title,
+        period: [proj.startDate, proj.endDate || (proj.isCurrent ? '진행 중' : '')].filter(Boolean).join(' ~ '),
+        status: proj.status,
         description: proj.description,
-        techStack: proj.techStack,
-        keyFeatures: proj.keyFeatures
-      }))
-    })),
-    sideProjects: (safeUser.projects || []).map((proj: any) => ({
-      id: proj.id,
-      title: proj.title,
-      period: [proj.startDate, proj.endDate || (proj.isCurrent ? '진행 중' : '')].filter(Boolean).join(' ~ '),
-      status: proj.status,
-      description: proj.description,
-      content: proj.content,
-      techStack: proj.techStack,
-      isVisible: proj.isVisible,
-      links: {
-        github: proj.githubLink || '#',
-        demo: proj.demoLink || '#'
-      }
-    }))
+        content: proj.content,
+        techStack: sortedTechs,
+        isVisible: proj.isVisible,
+        thumbnailUrl: proj.thumbnail?.url || null,
+        links: {
+          github: proj.githubLink || null,
+          demo: proj.demoLink || null
+        }
+      };
+    })
   };
 
   return (

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Plus, FolderOpen, Edit, Trash2, Loader2, Link as LinkIcon, Calendar } from 'lucide-react';
+import { Plus, FolderOpen, Edit, Trash2, Loader2, Link as LinkIcon, Calendar, Eye, EyeOff, CheckCircle2, Clock, Save } from 'lucide-react';
 import styles from '@/app/admin/admin.module.css';
 import { AdminPageWrapper, LoadingState, EmptyState, Modal } from '@/components/admin/AdminComponents';
 import TechIcon from '@/components/TechIcon';
@@ -25,7 +25,7 @@ export default function SideProjectAdminPage() {
     content: '',
     achievements: '',
     techStack: [] as string[],
-    link: '',
+    role: '',
     githubUrl: '',
     demoUrl: '',
     sortOrder: 0
@@ -61,7 +61,7 @@ export default function SideProjectAdminPage() {
     }
   };
 
-  const handleProjectSubmit = async (e: React.FormEvent) => {
+  const handleProjectSubmit = async (e: React.FormEvent, showToast: any) => {
     e.preventDefault();
     const url = editingProjectId ? `/api/admin?target=projects&id=${editingProjectId}` : '/api/admin?target=projects';
     const method = editingProjectId ? 'PATCH' : 'POST';
@@ -70,10 +70,9 @@ export default function SideProjectAdminPage() {
     try {
       const payload = {
         ...formData,
-        techStack: formData.techStack,
-        keyFeatures: formData.achievements.split('\n').map(s => s.trim()).filter(s => s !== ''),
-        githubUrl: formData.githubUrl || formData.link, 
-        demoUrl: formData.demoUrl || formData.link
+        keyFeatures: formData.achievements.split('\n').filter(s => s.trim() !== ''),
+        githubLink: formData.githubUrl,
+        demoLink: formData.demoUrl
       };
 
       const res = await fetch(url, {
@@ -83,43 +82,74 @@ export default function SideProjectAdminPage() {
       });
 
       if (res.ok) {
-        alert(editingProjectId ? '프로젝트가 수정되었습니다.' : '새 프로젝트가 등록되었습니다.');
         setIsAddingProject(false);
         setEditingProjectId(null);
-        setFormData({ 
-          title: '', 
-          startDate: '', 
-          endDate: '', 
-          status: '완료', 
-          isCurrent: false, 
-          isVisible: false,
-          description: '', 
-          content: '',
-          achievements: '', 
-          techStack: [], 
-          link: '', 
-          githubUrl: '',
-          demoUrl: '',
-          sortOrder: 0 
-        });
+        resetForm();
         fetchProjects();
+        showToast('프로젝트가 저장되었습니다.', 'success');
       } else {
-        const error = await res.json();
-        alert(`저장 실패: ${error.error || '알 수 없는 오류'}`);
+        showToast('저장에 실패했습니다.', 'error');
       }
+    } catch (e) {
+      showToast('오류가 발생했습니다.', 'error');
     } finally {
       setIsUploading(false);
     }
   };
 
-  const handleProjectDelete = async (id: string) => {
-    if (!confirm('정말로 이 프로젝트를 삭제하시겠습니까?')) return;
+  const handleBatchHide = async (showToast: any) => {
+    if (!confirm('모든 사이드 프로젝트를 비공개로 전환하시겠습니까?')) return;
+    try {
+      const res = await fetch('/api/admin?target=batch-hide', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'projects' }),
+      });
+      if (res.ok) {
+        showToast('전체 비공개 처리되었습니다.', 'success');
+        fetchProjects();
+      }
+    } catch (e) {
+      showToast('처리에 실패했습니다.', 'error');
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({ 
+      title: '', 
+      startDate: '', 
+      endDate: '', 
+      status: '완료', 
+      isCurrent: false, 
+      isVisible: false,
+      description: '', 
+      content: '',
+      achievements: '', 
+      techStack: [], 
+      role: '',
+      githubUrl: '',
+      demoUrl: '',
+      sortOrder: 0 
+    });
+  };
+
+  const toggleVisibility = async (proj: any) => {
+    const res = await fetch(`/api/admin?target=projects&id=${proj.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...proj, isVisible: !proj.isVisible }),
+    });
+    if (res.ok) fetchProjects();
+  };
+
+  const handleProjectDelete = async (id: string, showToast: any) => {
+    if (!confirm('정말로 삭제하시겠습니까?')) return;
     const res = await fetch(`/api/admin?target=projects&id=${id}`, { method: 'DELETE' });
     if (res.ok) {
-      alert('삭제되었습니다.');
+      showToast('삭제되었습니다.', 'success');
       fetchProjects();
     } else {
-      alert('삭제에 실패했습니다.');
+      showToast('삭제에 실패했습니다.', 'error');
     }
   };
 
@@ -135,7 +165,7 @@ export default function SideProjectAdminPage() {
       content: proj.content || '',
       achievements: (proj.keyFeatures || []).join('\n'), 
       techStack: Array.isArray(proj.techStack) ? proj.techStack : [], 
-      link: proj.demoLink || proj.githubLink || '',
+      role: proj.role || '',
       githubUrl: proj.githubLink || '',
       demoUrl: proj.demoLink || '',
       sortOrder: proj.sortOrder
@@ -146,391 +176,265 @@ export default function SideProjectAdminPage() {
 
   return (
     <AdminPageWrapper>
-      {() => (
-        <div className={styles.contentCard}>
-          <div className={styles.cardTop}>
-            <div className="flex items-center gap-2">
-              <FolderOpen size={18} className="text-purple-500" />
-              <h3 className="font-bold" style={{ margin: 0 }}>사이드 프로젝트 (Side Projects)</h3>
+      {(profile, showToast) => (
+        <div className={styles.fadeIn}>
+          {/* Header */}
+          <div className={styles.pageHeader}>
+            <div className={styles.titleGroup}>
+              <h1>사이드 프로젝트 관리</h1>
+              <p>개인 프로젝트 및 팀 프로젝트 성과물을 체계적으로 관리합니다.</p>
             </div>
-            <button
-              className={styles.btnPrimary}
-              style={{ padding: '6px 14px', fontSize: '0.8rem' }}
-              onClick={() => {
-                setIsAddingProject(true);
-                setEditingProjectId(null);
-                setFormData({ 
-                  title: '', 
-                  startDate: '', 
-                  endDate: '', 
-                  status: '제작 중', 
-                  isCurrent: true, 
-                  isVisible: false,
-                  description: '', 
-                  content: '',
-                  achievements: '', 
-                  techStack: [], 
-                  link: '', 
-                  githubUrl: '',
-                  demoUrl: '',
-                  sortOrder: projects.length 
-                });
-              }}
-            >
-              <Plus size={14} /> 프로젝트 등록
-            </button>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button
+                className={styles.btnSecondary}
+                onClick={() => handleBatchHide(showToast)}
+                title="전체 비공개"
+              >
+                <EyeOff size={16} /> 전체 비공개
+              </button>
+              <button
+                className={styles.btnPrimary}
+                onClick={() => {
+                  resetForm();
+                  setEditingProjectId(null);
+                  setIsAddingProject(true);
+                }}
+              >
+                <Plus size={16} /> 프로젝트 등록
+              </button>
+            </div>
           </div>
-          <div style={{ padding: '24px' }}>
+
+          {/* List */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
             {loading ? <LoadingState /> : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {projects.length > 0 ? (
-                  projects.sort((a, b) => (b.sortOrder || 0) - (a.sortOrder || 0)).map(proj => (
-                    <div key={proj.id} className={styles.listItem}>
-                      <div className={styles.itemMain}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                          <div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                              <h4 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800 }}>{proj.title}</h4>
-                              <div style={{ display: 'flex', gap: '4px' }}>
-                                {proj.status && (
-                                  <span style={{ 
-                                    padding: '2px 8px', 
-                                    background: proj.status === '완료' ? '#f0fdf4' : '#eff6ff', 
-                                    color: proj.status === '완료' ? '#166534' : '#2563eb',
-                                    border: `1px solid ${proj.status === '완료' ? '#bbf7d0' : '#dbeafe'}`,
-                                    borderRadius: '100px',
-                                    fontSize: '0.65rem',
-                                    fontWeight: 800,
-                                  }}>
-                                    {proj.status}
-                                  </span>
-                                )}
-                                {proj.isVisible && (
-                                  <span style={{ 
-                                    padding: '2px 8px', 
-                                    background: '#f0f9ff', 
-                                    color: '#0369a1',
-                                    border: '1px solid #bae6fd',
-                                    borderRadius: '100px',
-                                    fontSize: '0.65rem',
-                                    fontWeight: 800,
-                                  }}>
-                                    👁️ 노출 중
-                                  </span>
-                                )}
+              projects.length > 0 ? (
+                projects.sort((a, b) => (b.sortOrder || 0) - (a.sortOrder || 0)).map(proj => (
+                  <div key={proj.id} className={styles.contentCard} style={{ margin: 0 }}>
+                    <div style={{ padding: '32px' }}>
+                      <div style={{ display: 'flex', gap: '24px' }}>
+                        {/* Project Icon/Thumbnail Area */}
+                        <div style={{ 
+                          width: '100px', 
+                          height: '100px', 
+                          borderRadius: '16px', 
+                          background: '#f1f5f9',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: '#94a3b8',
+                          flexShrink: 0,
+                          border: '1px solid #e2e8f0'
+                        }}>
+                          <FolderOpen size={40} />
+                        </div>
+
+                        {/* Info Area */}
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                            <div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
+                                <h4 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800, color: '#0f172a' }}>{proj.title}</h4>
+                                <span className={`${styles.badge} ${proj.status === '완료' ? styles.badgeSuccess : styles.badgeInfo}`}>
+                                  {proj.status === '완료' ? <CheckCircle2 size={12} style={{ marginRight: '4px' }} /> : <Clock size={12} style={{ marginRight: '4px' }} />}
+                                  {proj.status}
+                                </span>
                               </div>
+                              <p style={{ margin: 0, fontSize: '0.9rem', color: '#10b981', fontWeight: 600 }}>{proj.role }</p>
                             </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', color: '#94a3b8' }}>
-                              <Calendar size={12} />
-                              <span>
-                                {proj.startDate} ~ {proj.isCurrent ? '진행 중' : (proj.endDate || '')}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <button
+                                onClick={() => toggleVisibility(proj)}
+                                title={proj.isVisible ? '공개 중' : '비공개 중'}
+                                style={{
+                                  width: '32px',
+                                  height: '32px',
+                                  borderRadius: '8px',
+                                  border: '1px solid',
+                                  borderColor: proj.isVisible ? '#d1fae5' : '#f1f5f9',
+                                  background: proj.isVisible ? '#ecfdf5' : '#f8fafc',
+                                  color: proj.isVisible ? '#10b981' : '#94a3b8',
+                                  cursor: 'pointer',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center'
+                                }}
+                              >
+                                {proj.isVisible ? <Eye size={16} /> : <EyeOff size={16} />}
+                              </button>
+                              <button className={styles.btnIcon} onClick={() => handleProjectEdit(proj)}><Edit size={16} /></button>
+                              <button className={styles.btnIcon} onClick={() => handleProjectDelete(proj.id, showToast)}><Trash2 size={16} /></button>
+                            </div>
+                          </div>
+
+                          {/* Tech Stack Tags */}
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '16px' }}>
+                            {Array.isArray(proj.techStack) && proj.techStack.map((tech: string) => (
+                              <span key={tech} style={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                gap: '4px', 
+                                fontSize: '0.75rem', 
+                                padding: '4px 8px', 
+                                background: '#f8fafc', 
+                                color: '#64748b', 
+                                borderRadius: '6px',
+                                border: '1px solid #e2e8f0',
+                                fontWeight: 500
+                              }}>
+                                <TechIcon name={tech} size={12} />
+                                {tech}
                               </span>
-                            </div>
+                            ))}
                           </div>
-                          <div style={{ display: 'flex', gap: '8px' }}>
-                            <button className={styles.btnIcon} onClick={() => handleProjectEdit(proj)}><Edit size={14} /></button>
-                            <button className={styles.btnIcon} onClick={() => handleProjectDelete(proj.id)}><Trash2 size={14} /></button>
-                          </div>
-                        </div>
 
-                        <p style={{ marginTop: '16px', fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>{proj.description}</p>
-                        {proj.content && <p style={{ marginTop: '8px', fontSize: '0.82rem', color: '#94a3b8', fontStyle: 'italic' }}>상세 내용 포함됨</p>}
-
-                        <ul style={{ marginTop: '12px', paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                          {(proj.keyFeatures || []).map((ach: string, k: number) => (
-                            <li key={k} style={{ fontSize: '0.82rem', color: '#475569' }}>{ach}</li>
-                          ))}
-                        </ul>
-
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '16px' }}>
-                          {(proj.techStack || []).map((tech: string, k: number) => (
-                            <span key={k} style={{ 
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              gap: '4px', 
-                              fontSize: '0.7rem', 
-                              padding: '2px 8px', 
-                              background: '#eff6ff', 
-                              color: '#3b82f6', 
-                              borderRadius: '4px',
-                              fontWeight: 700
-                            }}>
-                              <TechIcon name={tech} size={10} />
-                              #{tech}
-                            </span>
-                          ))}
-                        </div>
-
-                        <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
-                          {proj.githubLink && (
-                            <a href={proj.githubLink} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.75rem', color: '#2563eb', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600 }}>
-                              <LinkIcon size={12} /> GitHub
-                            </a>
-                          )}
-                          {proj.demoLink && (
-                            <a href={proj.demoLink} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.75rem', color: '#2563eb', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600 }}>
-                              <LinkIcon size={12} /> Demo
-                            </a>
-                          )}
+                          <p style={{ marginTop: '16px', fontSize: '0.9rem', color: '#64748b', lineHeight: 1.6 }}>{proj.description}</p>
                         </div>
                       </div>
                     </div>
-                  ))
-                ) : (
-                  <EmptyState message="등록된 사이드 프로젝트가 없습니다." onAdd={() => {
-                    setIsAddingProject(true);
-                    setEditingProjectId(null);
-                    setFormData({ 
-                      title: '', 
-                      startDate: '', 
-                      endDate: '', 
-                      status: '제작 중', 
-                      isCurrent: true, 
-                      isVisible: false,
-                      description: '', 
-                      content: '',
-                      achievements: '', 
-                      techStack: [], 
-                      link: '', 
-                      githubUrl: '',
-                      demoUrl: '',
-                      sortOrder: projects.length 
-                    });
-                  }} />
-                )}
-              </div>
+                  </div>
+                ))
+              ) : (
+                <EmptyState message="등록된 사이드 프로젝트가 없습니다." onAdd={() => {
+                  resetForm();
+                  setEditingProjectId(null);
+                  setIsAddingProject(true);
+                }} />
+              )
             )}
           </div>
 
+          {/* Modal */}
           <Modal
             isOpen={isAddingProject}
             onClose={() => setIsAddingProject(false)}
             title={editingProjectId ? '프로젝트 수정' : '프로젝트 등록'}
+            footer={
+              <>
+                <button type="button" onClick={() => setIsAddingProject(false)} className={styles.btnSecondary} disabled={isUploading}>취소</button>
+                <button type="submit" form="side-form" className={styles.btnPrimary} disabled={isUploading}>
+                  {isUploading ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                  데이터 저장
+                </button>
+              </>
+            }
           >
-            <form onSubmit={handleProjectSubmit} className={styles.formGrid}>
+            <form id="side-form" onSubmit={(e) => handleProjectSubmit(e, showToast)} className={styles.formGrid}>
               <div className={styles.field}>
                 <label>프로젝트 제목</label>
-                <input className={styles.input} placeholder="예: OO 개인 포트폴리오 웹사이트" value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} required />
+                <input className={styles.input} placeholder="예: 개인 포트폴리오 웹사이트" value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} required />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                <div className={styles.field}>
+                  <label>담당 역할</label>
+                  <input className={styles.input} placeholder="예: Fullstack 개발 (개인)" value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value })} />
+                </div>
+                <div className={styles.field}>
+                  <label>상태</label>
+                  <select className={styles.select} value={formData.status} onChange={e => setFormData({ ...formData, status: e.target.value })}>
+                    <option value="완료">완료</option>
+                    <option value="진행 중">진행 중</option>
+                    <option value="유지보수">유지보수</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                 <div className={styles.field}>
                   <label>시작일</label>
-                  <input 
-                    type="text"
-                    className={styles.input}
-                    placeholder="예: 2023.01"
-                    value={formData.startDate}
-                    onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                  />
+                  <input className={styles.input} placeholder="예: 2023.01" value={formData.startDate} onChange={e => setFormData({ ...formData, startDate: e.target.value })} />
                 </div>
                 <div className={styles.field}>
-                  <label>종료일 (또는 예정)</label>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <input 
-                      type="text"
-                      className={styles.input}
-                      placeholder="예: 2023.12"
-                      value={formData.endDate}
-                      onChange={(e) => setFormData({ ...formData, endDate: e.target.value, isCurrent: false })}
-                      disabled={formData.isCurrent}
-                      style={{ 
-                        background: formData.isCurrent ? '#f8fafc' : '#fafafa',
-                        color: formData.isCurrent ? '#94a3b8' : '#1e293b',
-                        cursor: formData.isCurrent ? 'not-allowed' : 'text',
-                        borderColor: formData.isCurrent ? '#e2e8f0' : '#eaeaea',
-                        opacity: formData.isCurrent ? 0.7 : 1
-                      }}
-                    />
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, color: '#64748b' }}>
-                      <input 
-                        type="checkbox" 
-                        checked={formData.isCurrent} 
-                        onChange={e => setFormData({ 
-                          ...formData, 
-                          isCurrent: e.target.checked, 
-                          endDate: e.target.checked ? '' : formData.endDate,
-                          status: e.target.checked ? '제작 중' : '완료'
-                        })}
-                      />
-                      진행 중 (제작/유지보수 포함)
-                    </label>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, color: '#0369a1' }}>
-                      <input 
-                        type="checkbox" 
-                        checked={formData.isVisible} 
-                        onChange={e => setFormData({ 
-                          ...formData, 
-                          isVisible: e.target.checked
-                        })}
-                      />
-                      포트폴리오 노출 여부
-                    </label>
-                  </div>
+                  <label>종료일</label>
+                  <input 
+                    className={styles.input} 
+                    placeholder="예: 2023.04" 
+                    value={formData.endDate} 
+                    onChange={e => setFormData({ ...formData, endDate: e.target.value, isCurrent: false })} 
+                    disabled={formData.isCurrent}
+                    style={{ opacity: formData.isCurrent ? 0.5 : 1, backgroundColor: formData.isCurrent ? '#f1f5f9' : '#fff' }}
+                  />
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}>
+                    <input type="checkbox" checked={formData.isCurrent} onChange={e => setFormData({ ...formData, isCurrent: e.target.checked })} />
+                    진행 중
+                  </label>
                 </div>
               </div>
 
               <div className={styles.field}>
-                <label>프로젝트 상태</label>
-                <select 
-                  className={styles.select}
-                  value={formData.status}
-                  onChange={e => setFormData({ ...formData, status: e.target.value })}
-                >
-                  <option value="제작 중">제작 중</option>
-                  <option value="유지보수 중">유지보수 중</option>
-                  <option value="완료">완료</option>
-                  <option value="중단">중단</option>
-                </select>
+                <label>한줄 소개</label>
+                <input className={styles.input} placeholder="프로젝트의 핵심 주제를 간단히 설명하세요." value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} />
               </div>
 
               <div className={styles.field}>
-                <label>프로젝트 한줄 소개</label>
-                <textarea className={styles.input} style={{ minHeight: '60px', resize: 'none' }} placeholder="프로젝트의 핵심 주제를 간단히 요약하세요." value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} />
+                <label>주요 기능 및 성과 (줄바꿈으로 구분)</label>
+                <textarea className={styles.input} style={{ minHeight: '100px', resize: 'none' }} placeholder="구체적인 성과나 추진 업무를 기록하세요." value={formData.achievements} onChange={e => setFormData({ ...formData, achievements: e.target.value })} />
               </div>
 
               <div className={styles.field}>
-                <label>주요 개발 내용 및 성과 (한 절씩 엔터로 구분)</label>
-                <textarea className={styles.input} style={{ minHeight: '100px', resize: 'none' }} placeholder="구체적인 기능 구현 사항이나 해결한 문제를 기록하세요." value={formData.achievements} onChange={e => setFormData({ ...formData, achievements: e.target.value })} />
-              </div>
-
-              <div className={styles.field}>
-                <label>상세 설명 및 회고 (Markdown 지원) </label>
-                <textarea className={styles.input} style={{ minHeight: '150px', resize: 'vertical' }} placeholder="프로젝트의 상세한 배경, 기술적 도전 과제, 배운 점 등을 기록하세요." value={formData.content} onChange={e => setFormData({ ...formData, content: e.target.value })} />
-              </div>
-              <div className={styles.field}>
-                <label>기술 스택 선택 (내 기술 목록)</label>
-
+                <label>사용 기술 스택</label>
                 <div style={{ 
                   display: 'flex', 
-                  flexDirection: 'column', 
-                  gap: '12px', 
-                  maxHeight: '250px', 
-                  overflowY: 'auto',
-                  padding: '16px',
-                  background: '#fafafa',
-                  border: '1px solid #eaeaea',
-                  borderRadius: '12px'
+                  flexWrap: 'wrap', 
+                  gap: '8px', 
+                  padding: '16px', 
+                  background: '#f8fafc', 
+                  borderRadius: '12px',
+                  border: '1px solid #e2e8f0',
+                  maxHeight: '150px',
+                  overflowY: 'auto'
                 }}>
-                  {/* 선택된 기술 요약 */}
-                  {formData.techStack.length > 0 && (
-                    <div style={{ marginBottom: '16px', padding: '12px', background: '#fff', borderRadius: '8px', border: '1px solid #000' }}>
-                      <label style={{ fontSize: '0.7rem', fontWeight: 900, display: 'block', marginBottom: '8px', color: '#000' }}>선택된 기술 ({formData.techStack.length})</label>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                        {formData.techStack.map(tech => (
-                          <span key={tech} style={{ padding: '2px 8px', background: '#000', color: '#fff', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            {tech}
-                            <button type="button" onClick={() => setFormData({ ...formData, techStack: formData.techStack.filter(s => s !== tech) })} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: 0, fontSize: '0.8rem' }}>×</button>
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {registeredTechs.length > 0 ? (
-                    (Object.entries(
-                      registeredTechs.reduce((acc, tech: any) => {
-                        const cat = tech.category || '기타';
-                        if (!acc[cat]) acc[cat] = [];
-                        acc[cat].push(tech);
-                        return acc;
-                      }, {} as Record<string, any[]>)
-                    ) as [string, any[]][]).map(([category, techs]) => (
-                      <div key={category} style={{ marginBottom: '8px' }}>
-                        <div style={{ fontSize: '0.7rem', fontWeight: 900, color: '#94a3b8', marginBottom: '8px', textTransform: 'uppercase' }}>{category}</div>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                          {techs.map((tech: any) => {
-                            const isSelected = formData.techStack.includes(tech.name);
-                            return (
-                              <button
-                                key={tech.id}
-                                type="button"
-                                onClick={() => {
-                                  const newStack = isSelected
-                                    ? formData.techStack.filter(s => s !== tech.name)
-                                    : [...formData.techStack, tech.name];
-                                  setFormData({ ...formData, techStack: newStack });
-                                }}
-                                style={{
-                                  padding: '4px 10px',
-                                  fontSize: '0.75rem',
-                                  borderRadius: '6px',
-                                  border: `1px solid ${isSelected ? '#000' : '#eaeaea'}`,
-                                  background: isSelected ? '#000' : '#fff',
-                                  color: isSelected ? '#fff' : '#64748b',
-                                  fontWeight: 600,
-                                  cursor: 'pointer',
-                                  transition: 'all 0.15s',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '6px'
-                                }}
-                              >
-                                <TechIcon name={tech.name} size={12} />
-                                {tech.name}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <p style={{ fontSize: '0.8rem', color: '#94a3b8', margin: 0 }}>등록된 기술 스택이 없습니다.</p>
-                  )}
-
-                  {/* 직접 입력 추가 */}
-                  <div style={{ marginTop: '8px', paddingTop: '16px', borderTop: '1px dashed #eaeaea' }}>
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <input 
-                        id="manualTechInput"
-                        className={styles.input} 
-                        placeholder="기타 기술 직접 입력 (엔터로 추가)" 
-                        style={{ flex: 1, padding: '8px 12px', fontSize: '0.85rem' }}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                            const val = (e.target as HTMLInputElement).value.trim();
-                            if (val && !formData.techStack.includes(val)) {
-                              setFormData({ ...formData, techStack: [...formData.techStack, val] });
-                              (e.target as HTMLInputElement).value = '';
-                            }
-                          }
-                        }}
-                      />
-                      <button 
-                        type="button" 
-                        className={styles.btnPrimary} 
-                        style={{ padding: '8px 16px', fontSize: '0.8rem' }}
-                        onClick={() => {
-                          const input = document.getElementById('manualTechInput') as HTMLInputElement;
-                          const val = input.value.trim();
-                          if (val && !formData.techStack.includes(val)) {
-                            setFormData({ ...formData, techStack: [...formData.techStack, val] });
-                            input.value = '';
-                          }
-                        }}
-                      >추가</button>
-                    </div>
-                  </div>
+                  {registeredTechs
+                    .filter(tech => !['git', 'github', 'git & github'].includes(tech.name.toLowerCase()))
+                    .map(tech => (
+                    <button
+                      key={tech.id}
+                      type="button"
+                      onClick={() => {
+                        const isSelected = formData.techStack.includes(tech.name);
+                        setFormData({
+                          ...formData,
+                          techStack: isSelected 
+                            ? formData.techStack.filter(s => s !== tech.name)
+                            : [...formData.techStack, tech.name]
+                        });
+                      }}
+                      style={{
+                        padding: '6px 12px',
+                        fontSize: '0.8rem',
+                        borderRadius: '6px',
+                        border: '1px solid',
+                        borderColor: formData.techStack.includes(tech.name) ? '#10b981' : '#e2e8f0',
+                        background: formData.techStack.includes(tech.name) ? '#ecfdf5' : '#fff',
+                        color: formData.techStack.includes(tech.name) ? '#10b981' : '#64748b',
+                        cursor: 'pointer',
+                        fontWeight: 600,
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      {tech.name}
+                    </button>
+                  ))}
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                 <div className={styles.field}>
-                  <label>Github 링크 (선택)</label>
+                  <label>GitHub</label>
                   <input className={styles.input} placeholder="https://github.com/..." value={formData.githubUrl} onChange={e => setFormData({ ...formData, githubUrl: e.target.value })} />
                 </div>
                 <div className={styles.field}>
-                  <label>데모/라이브 링크 (선택)</label>
+                  <label>Live Demo</label>
                   <input className={styles.input} placeholder="https://..." value={formData.demoUrl} onChange={e => setFormData({ ...formData, demoUrl: e.target.value })} />
                 </div>
               </div>
 
-              <div className={styles.btnGroup}>
-                <button type="button" onClick={() => setIsAddingProject(false)} className={styles.btnCancel} disabled={isUploading}>닫기</button>
-                <button type="submit" className={styles.btnPrimary} disabled={isUploading}>
-                  {isUploading ? <><Loader2 size={14} className="animate-spin" /> {editingProjectId ? '수정 중...' : '등록 중...'}</> : (editingProjectId ? '수정 완료' : '등록 완료')}
-                </button>
+              <div className={styles.field}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 600 }}>
+                  <input type="checkbox" checked={formData.isVisible} onChange={e => setFormData({ ...formData, isVisible: e.target.checked })} />
+                  포트폴리오에 즉시 공개
+                </label>
               </div>
             </form>
           </Modal>

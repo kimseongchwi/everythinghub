@@ -1,29 +1,31 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   User,
   Save,
   GraduationCap,
   Github,
   Globe,
-  ImageIcon,
-  Loader2
+  Mail,
+  Phone,
+  Loader2,
+  Calendar,
+  CheckCircle2
 } from 'lucide-react';
 
 import styles from '@/app/admin/admin.module.css';
 import { LoadingState } from '@/components/admin/AdminComponents';
 
 export default function ProfileAdminPage() {
-  // 프로필 정보 상태
   const [profile, setProfile] = useState({
     name: '김성취',
     position: '',
     email: 'ghfkddl665@naver.com',
     phone: '010-3708-4460',
-    school: '명지전문대학',
-    major: '정보통신공학과',
-    degreeStatus: '전문학사',
+    school: '',
+    major: '',
+    degreeStatus: '',
     startDate: '',
     endDate: '',
     isCurrent: false,
@@ -37,9 +39,7 @@ export default function ProfileAdminPage() {
   });
 
   const [isUploading, setIsUploading] = useState(false);
-  const [pendingAvatarFile, setPendingAvatarFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(true);
-  const profileFileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetchProfile();
@@ -53,7 +53,6 @@ export default function ProfileAdminPage() {
         const data = await res.json();
         if (data) {
           const edu = data.educations?.[0];
-
           setProfile({
             name: data.name || '',
             position: data.position || '',
@@ -80,53 +79,20 @@ export default function ProfileAdminPage() {
     }
   };
 
-  const handleProfileAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setProfile(prev => ({ ...prev, avatarUrl: reader.result as string }));
-      setPendingAvatarFile(file);
-      alert(`프로필 이미지가 변경되었습니다. \n최종 [프로필 수정] 버튼을 눌러야 반영됩니다.`);
-    };
-    reader.readAsDataURL(file);
-
-    if (profileFileInputRef.current) profileFileInputRef.current.value = '';
-  };
-
   const handleProfileSave = async () => {
     setIsUploading(true);
     try {
-      let currentAvatarId = profile.avatarId;
-
-      if (pendingAvatarFile) {
-        const response = await fetch(`/api/admin?target=attachments&filename=${encodeURIComponent(pendingAvatarFile.name)}`, {
-          method: 'POST',
-          body: pendingAvatarFile,
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          currentAvatarId = data.id;
-        } else {
-          alert('프로필 이미지 업로드에 실패하여 기존 정보만 저장합니다.');
-        }
-      }
-
-      const profileToSave = { ...profile, avatarId: currentAvatarId };
       const url = profile.id ? `/api/admin?target=profile&id=${profile.id}` : '/api/admin?target=profile';
       const method = profile.id ? 'PATCH' : 'POST';
 
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(profileToSave),
+        body: JSON.stringify(profile),
       });
 
       if (res.ok) {
         alert(profile.id ? '프로필이 수정되었습니다.' : '프로필이 저장되었습니다.');
-        setPendingAvatarFile(null);
         fetchProfile();
       } else {
         const error = await res.json();
@@ -143,192 +109,225 @@ export default function ProfileAdminPage() {
   if (loading) return <LoadingState />;
 
   return (
-    <div className={styles.contentCard}>
-      <div className={styles.cardTop}>
-        <div className="flex items-center gap-2">
-          <User size={18} className="text-blue-500" />
-          <h3 className="font-bold" style={{ margin: 0 }}>프로필 관리</h3>
+    <div className={styles.fadeIn}>
+      {/* Header */}
+      <div className={styles.pageHeader}>
+        <div className={styles.titleGroup}>
+          <h1>프로필 관리</h1>
+          <p>포트폴리오 사이드바에 표시되는 기본 정보를 관리합니다.</p>
         </div>
         <button
           className={styles.btnPrimary}
-          style={{ padding: '6px 16px', fontSize: '0.85rem' }}
           onClick={handleProfileSave}
           disabled={isUploading}
         >
-          {isUploading ? (
-            <Loader2 size={14} className="animate-spin" />
-          ) : (
-            <Save size={14} />
-          )}
-          {" "}
-          {isUploading
-            ? (profile.id ? '수정 중...' : '저장 중...')
-            : (profile.id ? '프로필 수정' : '프로필 저장')
-          }
+          {isUploading ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+          저정하기
         </button>
       </div>
 
-      <div style={{ padding: '32px' }}>
-        <div style={{ display: 'flex', gap: '40px' }}>
-          {/* 좌측: 프로필 이미지 */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
-            <div style={{
-              width: '140px',
-              height: '140px',
-              borderRadius: '24px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              border: '1px solid #cccccc',
-              overflow: 'hidden',
-              position: 'relative'
-            }}>
-              {profile.avatarUrl ? (
-                <img src={profile.avatarUrl} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              ) : (
-                <div className="flex flex-col items-center text-gray-400">
-                  <User size={40} />
-                  <span style={{ fontSize: '0.65rem', fontWeight: 800, marginTop: '8px' }}>PROFILE</span>
-                </div>
-              )}
-            </div>
-            <input
-              type="file"
-              ref={profileFileInputRef}
-              style={{ display: 'none' }}
-              accept="image/*"
-              onChange={handleProfileAvatarUpload}
-            />
-            <button
-              className={styles.btnIcon}
-              style={{ fontSize: '0.75rem', fontWeight: 700, width: '100%' }}
-              onClick={() => profileFileInputRef.current?.click()}
-              disabled={isUploading}
-            >
-              {isUploading ? '업로드 중...' : '이미지 변경'}
-            </button>
+      <div className={styles.formGrid}>
+        {/* Card 1: 기본 정보 */}
+        <div className={styles.contentCard}>
+          <div className={styles.cardTop}>
+            <h3><User size={18} className="text-emerald-500" /> 기본 정보</h3>
           </div>
-
-          {/* 우측: 상세 정보 입력 */}
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          <div style={{ padding: '32px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }}>
               <div className={styles.field}>
                 <label>이름</label>
-                <input className={styles.input} value={profile.name} onChange={e => setProfile({ ...profile, name: e.target.value })} />
+                <input 
+                  className={styles.input} 
+                  value={profile.name} 
+                  onChange={e => setProfile({ ...profile, name: e.target.value })} 
+                />
               </div>
               <div className={styles.field}>
-                <label>희망 직무 / 포지션</label>
-                <input className={styles.input} placeholder="예: Full-Stack Developer" value={profile.position} onChange={e => setProfile({ ...profile, position: e.target.value })} />
+                <label>희망 직함 / 포지션</label>
+                <input 
+                  className={styles.input} 
+                  placeholder="예: Fullstack Developer" 
+                  value={profile.position} 
+                  onChange={e => setProfile({ ...profile, position: e.target.value })} 
+                />
               </div>
             </div>
+            <div className={styles.field}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <label>자기소개 (인사말)</label>
+                <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>
+                  * HTML 태그({'<b>'}, {'<span>'} 등) 사용 가능
+                </span>
+              </div>
+              <textarea
+                className={styles.input}
+                style={{ minHeight: '100px', resize: 'none' }}
+                value={profile.intro}
+                onChange={e => setProfile({ ...profile, intro: e.target.value })}
+                placeholder="자신을 표현하는 소개글을 입력하세요."
+              />
+            </div>
+          </div>
+        </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+        {/* Card 2: 연락처 */}
+        <div className={styles.contentCard}>
+          <div className={styles.cardTop}>
+            <h3><Mail size={18} className="text-emerald-500" /> 연락처 및 링크</h3>
+          </div>
+          <div style={{ padding: '32px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }}>
               <div className={styles.field}>
                 <label>이메일</label>
-                <input className={styles.input} value={profile.email} onChange={e => setProfile({ ...profile, email: e.target.value })} />
+                <div style={{ position: 'relative' }}>
+                  <input 
+                    className={styles.input} 
+                    style={{ paddingLeft: '40px' }}
+                    value={profile.email} 
+                    onChange={e => setProfile({ ...profile, email: e.target.value })} 
+                  />
+                  <Mail size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+                </div>
               </div>
               <div className={styles.field}>
                 <label>전화번호</label>
-                <input className={styles.input} value={profile.phone} onChange={e => setProfile({ ...profile, phone: e.target.value })} />
+                <div style={{ position: 'relative' }}>
+                  <input 
+                    className={styles.input} 
+                    style={{ paddingLeft: '40px' }}
+                    value={profile.phone} 
+                    onChange={e => setProfile({ ...profile, phone: e.target.value })} 
+                  />
+                  <Phone size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+                </div>
               </div>
             </div>
+            <div className={styles.field} style={{ marginBottom: '24px' }}>
+              <label>GitHub URL</label>
+              <div style={{ position: 'relative' }}>
+                <input 
+                  className={styles.input} 
+                  style={{ paddingLeft: '40px' }}
+                  value={profile.github} 
+                  onChange={e => setProfile({ ...profile, github: e.target.value })} 
+                />
+                <Github size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+              </div>
+            </div>
+            <div className={styles.field}>
+              <label>Blog URL</label>
+              <div style={{ position: 'relative' }}>
+                <input 
+                  className={styles.input} 
+                  style={{ paddingLeft: '40px' }}
+                  value={profile.blog} 
+                  onChange={e => setProfile({ ...profile, blog: e.target.value })} 
+                />
+                <Globe size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+              </div>
+            </div>
+          </div>
+        </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1.2fr 1fr', gap: '16px' }}>
+        {/* Card 3: 학력 사항 */}
+        <div className={styles.contentCard}>
+          <div className={styles.cardTop}>
+            <h3><GraduationCap size={18} className="text-emerald-500" /> 학력 사항</h3>
+          </div>
+          <div style={{ padding: '32px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 0.8fr', gap: '20px', marginBottom: '24px' }}>
               <div className={styles.field}>
-                <label className="flex items-center gap-2"><GraduationCap size={14} /> 학교</label>
-                <input className={styles.input} placeholder="예: 명지전문대학" value={profile.school} onChange={(e) => setProfile({ ...profile, school: e.target.value })} />
+                <label>학교명</label>
+                <input 
+                  className={styles.input} 
+                  placeholder="예: OO대학교"
+                  value={profile.school} 
+                  onChange={e => setProfile({ ...profile, school: e.target.value })} 
+                />
               </div>
               <div className={styles.field}>
-                <label>전공(학과)</label>
-                <input className={styles.input} placeholder="예: 정보통신공학과" value={profile.major} onChange={(e) => setProfile({ ...profile, major: e.target.value })} />
+                <label>전공</label>
+                <input 
+                  className={styles.input} 
+                  placeholder="예: 컴퓨터공학"
+                  value={profile.major} 
+                  onChange={e => setProfile({ ...profile, major: e.target.value })} 
+                />
               </div>
               <div className={styles.field}>
                 <label>학위 상태</label>
                 <select
                   className={styles.select}
                   value={profile.degreeStatus}
-                  onChange={(e) => setProfile({ ...profile, degreeStatus: e.target.value })}
+                  onChange={e => setProfile({ ...profile, degreeStatus: e.target.value })}
                 >
                   <option value="">선택하세요</option>
                   <option value="학사">학사</option>
                   <option value="전문학사">전문학사</option>
                   <option value="석사">석사</option>
                   <option value="박사">박사</option>
+                  <option value="졸업">졸업</option>
+                  <option value="수료">수료</option>
                 </select>
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
               <div className={styles.field}>
-                <label>재학 시작 (입학일)</label>
-                <input
-                  type="text"
-                  className={styles.input}
-                  placeholder="예: 2020.03"
-                  value={profile.startDate}
-                  onChange={(e) => setProfile({ ...profile, startDate: e.target.value })}
-                />
+                <label>입학일</label>
+                <div style={{ position: 'relative' }}>
+                  <input 
+                    className={styles.input} 
+                    style={{ paddingLeft: '40px' }}
+                    placeholder="예: 2020.03"
+                    value={profile.startDate} 
+                    onChange={e => setProfile({ ...profile, startDate: e.target.value })} 
+                  />
+                  <Calendar size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+                </div>
               </div>
               <div className={styles.field}>
-                <label>재학 종료 (졸업일)</label>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <input
-                    type="text"
-                    className={styles.input}
-                    placeholder="예: 2024.02"
-                    value={profile.endDate}
-                    onChange={(e) => setProfile({ ...profile, endDate: e.target.value, isCurrent: false })}
-                    disabled={profile.isCurrent}
-                    style={{ 
-                      background: profile.isCurrent ? '#f8fafc' : '#fafafa',
-                      color: profile.isCurrent ? '#94a3b8' : '#1e293b',
-                      cursor: profile.isCurrent ? 'not-allowed' : 'text',
-                      borderColor: profile.isCurrent ? '#e2e8f0' : '#eaeaea',
-                      opacity: profile.isCurrent ? 0.7 : 1
-                    }}
-                  />
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, color: '#64748b' }}>
+                <label>졸업일 (또는 예정)</label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div style={{ position: 'relative' }}>
+                    <input 
+                      className={styles.input} 
+                      style={{ paddingLeft: '40px', opacity: profile.isCurrent ? 0.5 : 1 }}
+                      placeholder="예: 2024.02"
+                      value={profile.endDate} 
+                      onChange={e => setProfile({ ...profile, endDate: e.target.value, isCurrent: false })} 
+                      disabled={profile.isCurrent}
+                    />
+                    <Calendar size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+                  </div>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}>
                     <input 
                       type="checkbox" 
                       checked={profile.isCurrent} 
-                      onChange={e => setProfile({ ...profile, isCurrent: e.target.checked })}
+                      onChange={e => setProfile({ ...profile, isCurrent: e.target.checked })} 
                     />
                     재학 중 (또는 휴학)
                   </label>
                 </div>
               </div>
             </div>
+          </div>
+        </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-              <div className={styles.field}>
-                <label className="flex items-center gap-2"><Github size={14} /> Github URL</label>
-                <input className={styles.input} value={profile.github} onChange={(e) => setProfile({ ...profile, github: e.target.value })} />
-              </div>
-              <div className={styles.field}>
-                <label className="flex items-center gap-2"><Globe size={14} /> Blog URL</label>
-                <input className={styles.input} value={profile.blog} onChange={(e) => setProfile({ ...profile, blog: e.target.value })} />
-              </div>
-            </div>
-
+        {/* Card 4: 비공개 메모 */}
+        <div className={styles.contentCard}>
+          <div className={styles.cardTop}>
+            <h3><CheckCircle2 size={18} style={{ color: '#94a3b8' }} /> 비공개 메모</h3>
+          </div>
+          <div style={{ padding: '32px' }}>
             <div className={styles.field}>
-              <label>인사말</label>
+              <label>개인적인 메모 (포트폴리오 비노출)</label>
               <textarea
                 className={styles.input}
-                style={{ minHeight: '80px', resize: 'none' }}
-                value={profile.intro}
-                onChange={e => setProfile({ ...profile, intro: e.target.value })}
-                placeholder="자신을 한 줄로 표현해 보세요."
-              />
-            </div>
-
-            <div className={styles.field}>
-              <label>개인 메모 (포트폴리오 비노출)</label>
-              <textarea
-                className={styles.input}
-                style={{ minHeight: '60px', resize: 'none', background: '#f8fafc' }}
+                style={{ minHeight: '80px', resize: 'none', background: '#f8fafc' }}
                 value={profile.privateMemo}
                 onChange={e => setProfile({ ...profile, privateMemo: e.target.value })}
-                placeholder="공개되지 않는 개인적인 메모를 입력하세요."
+                placeholder="나만 볼 수 있는 개인적인 메모를 기록하세요."
               />
             </div>
           </div>

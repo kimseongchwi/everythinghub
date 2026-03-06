@@ -27,8 +27,8 @@ export default function MediaAdminPage() {
     }
   };
 
-  const handleMediaDelete = async (id: string, filename: string) => {
-    if (!confirm(`정말로 이 파일을 삭제하시겠습니까?\n파일명: ${filename}`)) return;
+  const handleMediaDelete = async (id: string, originalName: string) => {
+    if (!confirm(`정말로 이 파일을 삭제하시겠습니까?\n파일명: ${originalName}`)) return;
     setIsDeleting(id);
     try {
       const res = await fetch(`/api/admin?target=attachments&id=${id}`, { method: 'DELETE' });
@@ -73,7 +73,7 @@ export default function MediaAdminPage() {
                       }}>
                         <div style={{ height: '140px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
                           {isImage ? (
-                            <img src={file.url} alt={file.filename} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            <img src={file.url} alt={file.originalName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                           ) : (
                             <FileText size={40} className="text-blue-200" />
                           )}
@@ -98,7 +98,7 @@ export default function MediaAdminPage() {
                               <ExternalLink size={18} />
                             </a>
                             <button 
-                              onClick={() => handleMediaDelete(file.id, file.filename)}
+                              onClick={() => handleMediaDelete(file.id, file.originalName)}
                               disabled={isDeleting === file.id}
                               style={{ color: '#ff4d4f', padding: '8px', background: 'rgba(255,255,255,0.2)', borderRadius: '50%', border: 'none', cursor: 'pointer' }}
                             >
@@ -116,7 +116,7 @@ export default function MediaAdminPage() {
                             overflow: 'hidden', 
                             textOverflow: 'ellipsis' 
                           }}>
-                            {file.filename}
+                            {file.originalName}
                           </p>
                           <p style={{ margin: '4px 0 0 0', fontSize: '0.65rem', color: '#94a3b8' }}>
                             {(file.size / 1024).toFixed(1)} KB

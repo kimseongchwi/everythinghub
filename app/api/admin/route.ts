@@ -213,12 +213,13 @@ export async function POST(request: Request) {
     if (target === 'tech') {
       if (!user) return NextResponse.json({ error: 'No user found' }, { status: 404 });
       const body = await request.json();
-      const { name, category, description, sortOrder } = body;
+      const { name, category, description, sortOrder, isVisible } = body;
       const tech = await prisma.techStack.create({
         data: {
           name,
           category,
           description,
+          isVisible: isVisible !== undefined ? isVisible : true,
           sortOrder: parseInt(String(sortOrder || 0)),
           userId: user.id
         }
@@ -403,13 +404,14 @@ export async function PATCH(request: Request) {
 
     if (target === 'tech') {
       if (!id) return NextResponse.json({ error: 'ID가 필요합니다.' }, { status: 400 });
-      const { name, category, description, sortOrder } = body;
+      const { name, category, description, sortOrder, isVisible } = body;
       const updated = await prisma.techStack.update({
         where: { id },
         data: {
           name,
           category,
           description,
+          isVisible: isVisible !== undefined ? isVisible : true,
           sortOrder: sortOrder ? Number(sortOrder) : 0,
         },
       });
@@ -481,6 +483,26 @@ export async function PATCH(request: Request) {
         },
       });
       return NextResponse.json(updated);
+    }
+
+    if (target === 'batch-hide') {
+      const { type } = body;
+      const user = await getMainUser();
+      if (!user) return NextResponse.json({ error: '사용자를 찾을 수 없습니다.' }, { status: 404 });
+
+      if (type === 'tech') {
+        await prisma.techStack.updateMany({
+          where: { userId: user.id },
+          data: { isVisible: false }
+        });
+      } else if (type === 'projects') {
+        // 사이드 프로젝트는 userId가 있고 workExperienceId가 없는 경우
+        await prisma.project.updateMany({
+          where: { userId: user.id, workExperienceId: null },
+          data: { isVisible: false }
+        });
+      }
+      return NextResponse.json({ success: true });
     }
 
     return NextResponse.json({ error: '잘못된 요청 대상입니다.' }, { status: 400 });
