@@ -10,15 +10,15 @@ datasource db {
 
 // 사용자 프로필 정보
 model User {
-  id       String  @id @default(uuid())
-  name     String // 이름
-  position String? // 전문 분야 / 지향하는 포지션 (예: Full-Stack Developer)
-  email    String  @unique
-  phone    String? // 연락처
-  github   String? // 깃허브 URL
-  notion   String? // 노션 URL
-  blog     String? // 블로그 URL
-  intro    String? @db.Text // 자기소개 (인사말)
+  id          String  @id @default(uuid())
+  name        String // 이름
+  position    String? // 전문 분야 / 지향하는 포지션 (예: Full-Stack Developer)
+  email       String  @unique
+  phone       String? // 연락처
+  github      String? // 깃허브 URL
+  blog        String? // 블로그 URL
+  intro       String? @db.Text // 자기소개 (인사말)
+  privateMemo String? @db.Text // 개인 메모 (포트폴리오 비노출)
 
   // 프로필 사진
   avatarId String?     @unique
@@ -57,7 +57,8 @@ model Education {
 model WorkExperience {
   id          String  @id @default(uuid())
   companyName String // 회사명
-  role        String // 담당 역할 (직책)
+  role        String // 담당 역할
+  position    String? // 직책 (예: 팀장, 대리 등)
   startDate   String // 입사일
   endDate     String? // 퇴사일
   isCurrent   Boolean @default(false) // 재직 중 여부
@@ -81,10 +82,11 @@ model Project {
   title       String // 프로젝트 명칭
   description String?  @db.Text // 프로젝트 한줄 설명
   content     String?  @db.Text // 상세 설명/회고 (메인 콘텐츠)
+  status      String? // 프로젝트 진행 상태 (예: 제작 중, 유지보수 중, 완료)
   startDate   String? // 시작일
   endDate     String? // 종료일
   isCurrent   Boolean  @default(false) // 진행 중 프로젝트 여부
-  isFeatured  Boolean  @default(false) // 포트폴리오 메인 노출 여부
+  isVisible   Boolean  @default(false) // 포트폴리오에 공개
   techStack   String[] // 사용 기술 태그 리스트
   keyFeatures String[] // 주요 기능 및 성과 (불렛 포인트용)
   githubLink  String? // 소스 코드 링크
@@ -113,6 +115,7 @@ model TechStack {
   name        String // 기술명 (예: React)
   category    String // 카테고리 (Frontend, Backend, Database, DevOps 등)
   description String? @db.Text // 해당 기술을 어떻게 사용하는지 설명
+  isVisible   Boolean @default(false) // 포트폴리오에 공개
   sortOrder   Int     @default(0) // 노출 순서
 
   userId String
@@ -124,12 +127,12 @@ model TechStack {
 
 // 자격증 및 수상 (Certifications & Awards)
 model Certification {
-  id         String    @id @default(uuid())
+  id         String  @id @default(uuid())
   title      String // 명칭
   issuer     String // 발행처
   status     String // 상태 (취득완료, 준비중, 만료 등)
-  acquiredAt DateTime? // 취득 일자
-  sortOrder  Int       @default(0)
+  acquiredAt String? // 취득 일자 (예: 2024.01)
+  sortOrder  Int     @default(0)
 
   userId String?
   user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)

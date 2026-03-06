@@ -98,9 +98,9 @@ export async function POST(request: Request) {
         phone,
         position,
         github,
-        notion,
         blog,
         intro,
+        privateMemo,
         avatarId,
         school,
         major,
@@ -119,7 +119,7 @@ export async function POST(request: Request) {
             phone,
             position,
             github,
-            notion,
+            privateMemo,
             blog,
             intro,
             avatarId: avatarId || null,
@@ -146,9 +146,9 @@ export async function POST(request: Request) {
             phone,
             position,
             github,
-            notion,
             blog,
             intro,
+            privateMemo,
             avatarId: avatarId || null
           }
         });
@@ -201,7 +201,7 @@ export async function POST(request: Request) {
           title,
           issuer,
           status,
-          acquiredAt: acquiredAt ? new Date(acquiredAt) : null,
+          acquiredAt: acquiredAt || null,
           sortOrder: sortOrder ? Number(sortOrder) : 0,
           userId: user.id,
           attachmentId: attachmentId || null,
@@ -213,12 +213,13 @@ export async function POST(request: Request) {
     if (target === 'tech') {
       if (!user) return NextResponse.json({ error: 'No user found' }, { status: 404 });
       const body = await request.json();
-      const { name, category, description, sortOrder } = body;
+      const { name, category, description, sortOrder, isVisible } = body;
       const tech = await prisma.techStack.create({
         data: {
           name,
           category,
           description,
+          isVisible: isVisible !== undefined ? isVisible : true,
           sortOrder: parseInt(String(sortOrder || 0)),
           userId: user.id
         }
@@ -229,11 +230,12 @@ export async function POST(request: Request) {
     if (target === 'work') {
       if (!user) return NextResponse.json({ error: '사용자를 찾을 수 없습니다.' }, { status: 404 });
       const body = await request.json();
-      const { companyName, role, startDate, endDate, isCurrent, summary, description, sortOrder } = body;
+      const { companyName, role, position, startDate, endDate, isCurrent, summary, description, sortOrder } = body;
       const work = await prisma.workExperience.create({
         data: {
           companyName,
           role,
+          position,
           startDate,
           endDate,
           isCurrent: isCurrent || false,
@@ -274,16 +276,17 @@ export async function POST(request: Request) {
     if (target === 'projects') {
       if (!user) return NextResponse.json({ error: '사용자를 찾을 수 없습니다.' }, { status: 404 });
       const body = await request.json();
-      const { title, description, techStack, githubUrl, demoUrl, thumbnailId, sortOrder, workExperienceId, content, startDate, endDate, isCurrent, isFeatured, keyFeatures } = body;
+      const { title, description, techStack, githubUrl, demoUrl, thumbnailId, sortOrder, workExperienceId, content, startDate, endDate, isCurrent, isVisible, keyFeatures, status } = body;
       const project = await prisma.project.create({
         data: {
           title,
           description,
           content,
+          status,
           startDate,
           endDate,
           isCurrent: isCurrent || false,
-          isFeatured: isFeatured || false,
+          isVisible: isVisible || false,
           techStack: Array.isArray(techStack) ? techStack : (techStack ? techStack.split(',').map((s: string) => s.trim()) : []),
           keyFeatures: Array.isArray(keyFeatures) ? keyFeatures : [],
           githubLink: githubUrl,
@@ -309,21 +312,21 @@ export async function PATCH(request: Request) {
   const { searchParams } = new URL(request.url);
   const target = searchParams.get('target');
   const id = searchParams.get('id');
-  if (!id) return NextResponse.json({ error: '대상 ID가 필요합니다.' }, { status: 400 });
 
   try {
     const body = await request.json();
 
     if (target === 'profile') {
+      if (!id) return NextResponse.json({ error: '대상 ID가 필요합니다.' }, { status: 400 });
       const {
         name,
         email,
         phone,
         position,
         github,
-        notion,
         blog,
         intro,
+        privateMemo,
         avatarId,
         school,
         major,
@@ -341,9 +344,9 @@ export async function PATCH(request: Request) {
           phone,
           position,
           github,
-          notion,
           blog,
           intro,
+          privateMemo,
           avatarId: avatarId || null
         }
       });
@@ -383,6 +386,7 @@ export async function PATCH(request: Request) {
     }
 
     if (target === 'certs') {
+      if (!id) return NextResponse.json({ error: 'ID가 필요합니다.' }, { status: 400 });
       const { title, issuer, status, acquiredAt, attachmentId, sortOrder } = body;
       const updated = await prisma.certification.update({
         where: { id },
@@ -390,7 +394,7 @@ export async function PATCH(request: Request) {
           title,
           issuer,
           status,
-          acquiredAt: acquiredAt ? new Date(acquiredAt) : null,
+          acquiredAt: acquiredAt || null,
           sortOrder: sortOrder ? Number(sortOrder) : 0,
           attachmentId: attachmentId || null,
         },
@@ -399,13 +403,15 @@ export async function PATCH(request: Request) {
     }
 
     if (target === 'tech') {
-      const { name, category, description, sortOrder } = body;
+      if (!id) return NextResponse.json({ error: 'ID가 필요합니다.' }, { status: 400 });
+      const { name, category, description, sortOrder, isVisible } = body;
       const updated = await prisma.techStack.update({
         where: { id },
         data: {
           name,
           category,
           description,
+          isVisible: isVisible !== undefined ? isVisible : true,
           sortOrder: sortOrder ? Number(sortOrder) : 0,
         },
       });
@@ -413,12 +419,14 @@ export async function PATCH(request: Request) {
     }
 
     if (target === 'work') {
-      const { companyName, role, startDate, endDate, isCurrent, summary, description, sortOrder } = body;
+      if (!id) return NextResponse.json({ error: 'ID가 필요합니다.' }, { status: 400 });
+      const { companyName, role, position, startDate, endDate, isCurrent, summary, description, sortOrder } = body;
       const updated = await prisma.workExperience.update({
         where: { id },
         data: {
           companyName,
           role,
+          position,
           startDate,
           endDate,
           isCurrent: isCurrent || false,
@@ -430,18 +438,42 @@ export async function PATCH(request: Request) {
       return NextResponse.json(updated);
     }
 
+    if (target === 'reorder') {
+      const { type, items } = body; // type is 'certs', 'tech', 'work', 'projects', items is [{id, sortOrder}]
+      
+      const updates = items.map((item: any) => {
+        const model = 
+          type === 'certs' ? prisma.certification :
+          type === 'tech' ? prisma.techStack :
+          type === 'work' ? prisma.workExperience :
+          type === 'projects' ? prisma.project : null;
+        
+        if (!model) return null;
+        // @ts-ignore - dynamic model access
+        return model.update({
+          where: { id: item.id },
+          data: { sortOrder: item.sortOrder }
+        });
+      }).filter(Boolean);
+
+      await Promise.all(updates);
+      return NextResponse.json({ success: true });
+    }
+
     if (target === 'projects') {
-      const { title, description, techStack, githubUrl, demoUrl, thumbnailId, sortOrder, content, startDate, endDate, isCurrent, isFeatured, keyFeatures } = body;
+      if (!id) return NextResponse.json({ error: 'ID가 필요합니다.' }, { status: 400 });
+      const { title, description, techStack, githubUrl, demoUrl, thumbnailId, sortOrder, content, startDate, endDate, isCurrent, isVisible, keyFeatures, status } = body;
       const updated = await prisma.project.update({
         where: { id },
         data: {
           title,
           description,
           content,
+          status,
           startDate,
           endDate,
           isCurrent: isCurrent || false,
-          isFeatured: isFeatured || false,
+          isVisible: isVisible || false,
           techStack: Array.isArray(techStack) ? techStack : (techStack ? techStack.split(',').map((s: string) => s.trim()) : []),
           keyFeatures: Array.isArray(keyFeatures) ? keyFeatures : [],
           githubLink: githubUrl,
@@ -451,6 +483,26 @@ export async function PATCH(request: Request) {
         },
       });
       return NextResponse.json(updated);
+    }
+
+    if (target === 'batch-hide') {
+      const { type } = body;
+      const user = await getMainUser();
+      if (!user) return NextResponse.json({ error: '사용자를 찾을 수 없습니다.' }, { status: 404 });
+
+      if (type === 'tech') {
+        await prisma.techStack.updateMany({
+          where: { userId: user.id },
+          data: { isVisible: false }
+        });
+      } else if (type === 'projects') {
+        // 사이드 프로젝트는 userId가 있고 workExperienceId가 없는 경우
+        await prisma.project.updateMany({
+          where: { userId: user.id, workExperienceId: null },
+          data: { isVisible: false }
+        });
+      }
+      return NextResponse.json({ success: true });
     }
 
     return NextResponse.json({ error: '잘못된 요청 대상입니다.' }, { status: 400 });

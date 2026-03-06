@@ -7,9 +7,11 @@ interface Props {
   value: string;
   onChange: (value: string) => void;
   label?: string;
+  placeholder?: string;
+  disabled?: boolean;
 }
 
-const CustomDatePicker: React.FC<Props> = ({ value, onChange, label }) => {
+const CustomDatePicker: React.FC<Props> = ({ value, onChange, label, placeholder, disabled }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const initialDate = value ? new Date(value) : new Date();
@@ -87,12 +89,14 @@ const CustomDatePicker: React.FC<Props> = ({ value, onChange, label }) => {
       {label && <label className="block text-xs font-bold text-gray-500 uppercase mb-2 ml-1">{label}</label>}
 
       <div
-        className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-all ${isOpen ? 'border-black ring-1 ring-black bg-white' : 'border-gray-200 bg-gray-50 hover:bg-white'
-          }`}
-        onClick={() => setIsOpen(!isOpen)}
+        className={`flex items-center justify-between p-3 border rounded-lg transition-all ${
+          disabled ? 'bg-gray-100 border-gray-200 cursor-not-allowed opacity-60' : 
+          isOpen ? 'border-black ring-1 ring-black bg-white cursor-pointer' : 'border-gray-200 bg-gray-50 hover:bg-white cursor-pointer'
+        }`}
+        onClick={() => !disabled && setIsOpen(!isOpen)}
       >
         <span className={`text-[0.95rem] ${value ? 'text-black font-medium' : 'text-gray-400'}`}>
-          {value ? value : '연도-월-일 선택'}
+          {value ? value : (placeholder || '연도-월-일 선택')}
         </span>
         <CalendarIcon size={18} className={isOpen ? 'text-black' : 'text-gray-400'} />
       </div>

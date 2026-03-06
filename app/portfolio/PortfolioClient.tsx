@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import styles from './portfolio.module.css';
 import {
   Mail,
@@ -11,8 +11,20 @@ import {
   FileText,
   Award,
   Briefcase,
-  GraduationCap
+  Layers,
+  FolderOpen,
+  ChevronDown,
+  ArrowUpRight,
+  Code2,
+  Cpu,
+  Database,
+  Cloud,
+  Layers3,
+  Terminal,
+  ChevronRight,
+  X
 } from 'lucide-react';
+import TechIcon from '@/components/TechIcon';
 
 interface PortfolioClientProps {
   initialCerts: any[];
@@ -20,155 +32,266 @@ interface PortfolioClientProps {
 }
 
 export default function PortfolioClient({ initialCerts, portfolioData }: PortfolioClientProps) {
+  const [activeNav, setActiveNav] = useState('경력');
+  const [selectedProject, setSelectedProject] = useState<any>(null);
+
+  const navItems = [
+    { label: '경력', icon: <Briefcase size={16} />, id: 'career' },
+    { label: '기술 스택', icon: <Cpu size={16} />, id: 'skills' },
+    { label: '프로젝트', icon: <FolderOpen size={16} />, id: 'projects' },
+    { label: '자격증', icon: <Award size={16} />, id: 'certs' },
+  ];
+
   return (
     <div className={styles.pageWrapper}>
-      <div className={styles.mainContainer}>
-        {/* Left Sidebar */}
-        <aside className={styles.sidebar}>
-          <div className={styles.profileInfo}>
-            <h1>{portfolioData.name}</h1>
-            <p>{portfolioData.position}</p>
-          </div>
+      {/* Sidebar - Dark Navy */}
+      <aside className={styles.sidebar}>
+        <div className={styles.profileInfo}>
+          <h1>{portfolioData.name}</h1>
+          <p className={styles.profilePosition}>{portfolioData.position}</p>
+        </div>
 
-          <div className={styles.sidebarSection}>
-            <span className={styles.sidebarLabel}>About</span>
-            <div className={styles.contactList}>
-              <div className={styles.contactItem}><Mail size={16} />{portfolioData.email}</div>
-              <div className={styles.contactItem}><Phone size={16} />{portfolioData.phone}</div>
-              <a href={portfolioData.github} target="_blank" className={styles.contactItem} rel="noopener noreferrer">
-                <Github size={16} />{portfolioData.github}
-              </a>
+        <div className={styles.sidebarSection}>
+          <span className={styles.sidebarLabel}>CONTACT</span>
+          <div className={styles.contactList}>
+            <a href={`mailto:${portfolioData.email}`} className={styles.contactItem}>
+              <div className={styles.contactIconBox}><Mail size={14} /></div>
+              <span>{portfolioData.email}</span>
+            </a>
+            <a href={`tel:${portfolioData.phone}`} className={styles.contactItem}>
+              <div className={styles.contactIconBox}><Phone size={14} /></div>
+              <span>{portfolioData.phone}</span>
+            </a>
+            <a href={portfolioData.github} target="_blank" className={styles.contactItem} rel="noopener noreferrer">
+              <div className={styles.contactIconBox}><Github size={14} /></div>
+              <span>GitHub</span>
+            </a>
+          </div>
+        </div>
+
+        <div className={styles.sidebarSection}>
+          <span className={styles.sidebarLabel}>EDUCATION</span>
+          {portfolioData.education.map((edu: any, i: number) => (
+            <div key={i} style={{ marginBottom: '24px' }}>
+              <p style={{ fontSize: '0.9rem', fontWeight: 800, margin: '0 0 4px 0' }}>{edu.school}</p>
+              <p style={{ fontSize: '0.75rem', color: '#94a3b8', margin: '0 0 4px 0' }}>{edu.major}</p>
+              <p style={{ fontSize: '0.7rem', color: '#64748b', margin: 0 }}>{edu.degreeStatus} · {edu.period}</p>
             </div>
-          </div>
+          ))}
+        </div>
 
-          <div className={styles.sidebarSection}>
-            <span className={styles.sidebarLabel}>Education</span>
-            {portfolioData.education.map((edu: any, i: number) => (
-              <div key={i} className={styles.eduItem}>
-                <h3>{edu.school}</h3>
-                <p>{edu.major} ({edu.degreeStatus})</p>
-                <p className={styles.eduPeriod}>{edu.period}</p>
+        <div className={styles.sidebarSection}>
+          <span className={styles.sidebarLabel}>QUICK NAV</span>
+          <div className={styles.navMenu}>
+            {navItems.map((item) => (
+              <a 
+                key={item.id} 
+                href={`#${item.id}`} 
+                className={`${styles.navItem} ${activeNav === item.label ? styles.navItemActive : ''}`}
+                onClick={() => setActiveNav(item.label)}
+              >
+                {item.icon}
+                {item.label}
+              </a>
+            ))}
+          </div>
+        </div>
+
+
+      </aside>
+
+      {/* Content Area */}
+      <main className={`${styles.mainContainer} ${styles.fadeIn}`}>
+        
+        {/* Intro */}
+        <section className={styles.introSection}>
+          <div className={styles.introSmallTitle}>PORTFOLIO</div>
+          <h2 className={styles.introTitle}>
+            안녕하세요,<br />
+            <span>{portfolioData.position}</span> {portfolioData.name}입니다.
+          </h2>
+          <div 
+            className={styles.introText} 
+            style={{ whiteSpace: 'pre-wrap' }}
+            dangerouslySetInnerHTML={{ __html: portfolioData.description }}
+          />
+        </section>
+
+        {/* Career (Work Experience) */}
+        <section id="career" className={styles.section}>
+          <div className={styles.sectionHeader}>
+            <div className={styles.sectionIcon}><Briefcase size={20} /></div>
+            <h2 className={styles.sectionTitle}>경력</h2>
+            <div className={styles.titleLine}></div>
+          </div>
+          
+          <div className={styles.experienceList}>
+            {portfolioData.workExperience.map((work: any, i: number) => (
+              <div key={i} className={styles.expItemWrapper}>
+                <div className={styles.expCard}>
+                  <div className={styles.expInfo}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <h3>{work.company}</h3>
+                    </div>
+                    <div className={styles.expRole}>{work.role}</div>
+                    <div className={styles.expDate}>
+                      <FileText size={12} /> {work.period}
+                    </div>
+                    <p className={styles.expSummary}>{work.summary}</p>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
-        </aside>
+        </section>
 
-        {/* Right Content */}
-        <main className={styles.contentArea}>
-          <section>
-            <p className={styles.introText}>{portfolioData.description}</p>
-          </section>
-
-          {/* New Prominent Skills Section */}
-          <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>Technical Skills</h2>
-            <div className={styles.skillsMainGrid}>
-              {portfolioData.skills.map((group: any, i: number) => (
-                <div key={i} className={styles.skillCategoryCard}>
-                  <h3 className={styles.skillCategoryTitle}>{group.category}</h3>
-                  <div className={styles.skillItemList}>
-                    {group.items.map((skill: any, j: number) => (
-                      <div key={j} className={styles.skillDetailItem}>
-                        <div className={styles.skillHeaderRow}>
-                          <span className={styles.skillItemName}>{skill.name}</span>
-                        </div>
-                        {skill.description && (
-                          <p className={styles.skillItemDesc}>{skill.description}</p>
-                        )}
-                      </div>
-                    ))}
+        {/* Technical Expertise */}
+        <section id="skills" className={styles.section}>
+          <div className={styles.sectionHeader}>
+            <div className={styles.sectionIcon}><Code2 size={20} /></div>
+            <h2 className={styles.sectionTitle}>기술 스택</h2>
+            <div className={styles.titleLine}></div>
+          </div>
+          
+          {portfolioData.skills.map((group: any, i: number) => (
+            <div key={i} className={styles.techCategoryBlock}>
+              <span className={styles.techCategoryLabel}>{group.category}</span>
+              <div className={styles.techGrid}>
+                {group.items.map((skill: any, j: number) => (
+                  <div key={j} className={styles.techPill}>
+                    <TechIcon name={skill.name} size={18} />
+                    <span>{skill.name}</span>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </section>
+          ))}
+        </section>
 
-          <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>Work Experience</h2>
-            <div className={styles.experienceList}>
-              {portfolioData.workExperience.map((work: any, i: number) => (
-                <div key={i} className={styles.experienceItem}>
-                  <div className={styles.expHeader}>
-                    <h3 className={styles.companyName}>{work.company}</h3>
-                    <span className={styles.expPeriod}>{work.period}</span>
-                  </div>
-                  <div className={styles.expProjects}>
-                    {work.projects.map((proj: any) => (
-                      <div key={proj.id} className={styles.workProject}>
-                        <h4>{proj.title}</h4>
-                        <p className={styles.wpDesc}>{proj.description}</p>
-                        <ul className={styles.wpFeatures}>
-                          {proj.keyFeatures?.map((f: string, k: number) => (
-                            <li key={k}>{f}</li>
-                          ))}
-                        </ul>
-                        <div className={styles.skillTags}>
-                          {proj.techStack.map((tech: string, k: number) => (
-                            <span key={k} className={styles.skillTag} style={{ background: '#eff6ff', color: '#3182ce' }}>#{tech}</span>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+        {/* Projects */}
+        <section id="projects" className={styles.section}>
+          <div className={styles.sectionHeader}>
+            <div className={styles.sectionIcon}><FolderOpen size={20} /></div>
+            <h2 className={styles.sectionTitle}>프로젝트</h2>
+            <div className={styles.titleLine}></div>
+          </div>
+          
+          <div className={styles.projectsGrid}>
+            {portfolioData.sideProjects.map((proj: any) => (
+              <div key={proj.id} className={styles.projectCard}>
+                <div className={styles.projectImage}>
+                  {proj.thumbnailUrl ? (
+                    <img src={proj.thumbnailUrl} alt={proj.title} />
+                  ) : (
+                    <div className={styles.emptyProjectImage}>
+                      <FolderOpen size={48} strokeWidth={1.5} />
+                    </div>
+                  )}
                 </div>
-              ))}
-            </div>
-          </section>
-
-          <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>Side Projects</h2>
-            <div className={styles.projectsGrid}>
-              {portfolioData.sideProjects.map((proj: any) => (
-                <div key={proj.id} className={styles.projectCard}>
-                  <div className={styles.pTitleBox}>
+                <div className={styles.projectContent}>
+                  <div className={styles.projectHeader}>
                     <div>
-                      <div className={styles.pHeaderRow}>
-                        <h3>{proj.title}</h3>
-                        {proj.isFeatured && <span className={styles.featuredBadge}>Featured</span>}
-                      </div>
-                      <span className={styles.pPeriod}>{proj.period}</span>
+                      <h4>{proj.title}</h4>
+                      <div className={styles.projectDate}>{proj.period}</div>
                     </div>
-                    <div className={styles.pLinks}>
-                      <a href={proj.links.github} target="_blank" className={styles.pLink} rel="noreferrer"><Github size={20} /></a>
-                      <a href={proj.links.demo} target="_blank" className={styles.pLink} rel="noreferrer"><Globe size={20} /></a>
-                    </div>
+                    {proj.status && (
+                      <span className={styles.currentBadge}>{proj.status}</span>
+                    )}
                   </div>
-                  <p className={styles.pDesc}>{proj.description}</p>
-                  <div className={styles.skillTags}>
-                    {proj.techStack.map((tech: string, j: number) => (
-                      <span key={j} className={styles.skillTag}>#{tech}</span>
+                  
+                  {proj.description && (
+                    <p className={styles.projectDesc}>{proj.description}</p>
+                  )}
+                  
+                  <div className={styles.projectTechs}>
+                    {proj.techStack.slice(0, 5).map((tech: string, k: number) => (
+                      <span key={k} className={styles.projectTechTag}>
+                        <TechIcon name={tech} size={12} />
+                        {tech}
+                      </span>
                     ))}
+                    {proj.techStack.length > 5 && <span className={styles.projectTechTag}>+{proj.techStack.length - 5}</span>}
                   </div>
-                </div>
-              ))}
-            </div>
-          </section>
 
-          <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>Certifications</h2>
-            <div className={styles.certList}>
-              {initialCerts.map((cert, i) => (
-                <div key={i} className={styles.certItem}>
-                  <div>
-                    <div className={styles.certName}>{cert.title}</div>
-                    <div className={styles.certIssuer}>{cert.issuer}</div>
-                  </div>
-                  <div className={styles.certRight}>
-                    <span className={styles.certDateBadge}>
-                      {cert.acquiredAt ? new Date(cert.acquiredAt).getFullYear() : '—'}
-                    </span>
-                    {cert.attachment?.url && (
-                      <a href={cert.attachment.url} target="_blank" className={styles.certFileBtn} rel="noreferrer">
-                        <FileText size={20} />
+                  <div className={styles.projectActions}>
+                    <button 
+                      onClick={() => setSelectedProject(proj)}
+                      className={`${styles.btnAction} ${styles.btnActionOutline}`}
+                    >
+                      간략히
+                    </button>
+                    <a href={`/portfolio/${proj.id}`} className={`${styles.btnAction} ${styles.btnActionSecondary}`}>
+                      자세히
+                    </a>
+                    {proj.links.github && (
+                      <a href={proj.links.github} target="_blank" rel="noreferrer" className={`${styles.btnAction} ${styles.btnActionSecondary}`}>
+                        <Github size={14} /> GitHub
+                      </a>
+                    )}
+                    {proj.links.demo && (
+                      <a href={proj.links.demo} target="_blank" rel="noreferrer" className={`${styles.btnAction} ${styles.btnActionPrimary}`}>
+                        <ExternalLink size={14} /> 페이지 오픈
                       </a>
                     )}
                   </div>
                 </div>
-              ))}
+              </div>
+            ))}
+          </div>
+
+          {/* Project Summary Modal */}
+          {selectedProject && (
+            <div className={styles.modalOverlay} onClick={() => setSelectedProject(null)}>
+              <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
+                <div className={styles.modalHeader}>
+                  <h3>프로젝트 요약</h3>
+                  <button className={styles.closeBtn} onClick={() => setSelectedProject(null)}>
+                    <X size={20} />
+                  </button>
+                </div>
+                <div className={styles.modalBody}>
+                  <div className={styles.modalScroll}>
+                    <div className={styles.modalIntro}>{selectedProject.title}</div>
+                    <div className={styles.modalDescription}>
+                      {selectedProject.content || selectedProject.description || "설명이 아직 등록되지 않았습니다."}
+                    </div>
+                  </div>
+                </div>
+                <div className={styles.modalFooter}>
+                  <button 
+                    className={styles.btnAction} 
+                    style={{ maxWidth: '100px' }} 
+                    onClick={() => setSelectedProject(null)}
+                  >
+                    닫기
+                  </button>
+                </div>
+              </div>
             </div>
-          </section>
-        </main>
-      </div>
+          )}
+        </section>
+
+        {/* Accreditations */}
+        <section id="certs" className={styles.section}>
+          <div className={styles.sectionHeader}>
+            <div className={styles.sectionIcon}><Award size={20} /></div>
+            <h2 className={styles.sectionTitle}>자격증</h2>
+            <div className={styles.titleLine}></div>
+          </div>
+          
+          <div className={styles.certsList}>
+            {initialCerts.map((cert, i) => (
+              <div key={i} className={styles.certItem}>
+                <div className={styles.certMain}>
+                  <h5 className={styles.certTitle}>{cert.title}</h5>
+                  <p className={styles.certOrg}>{cert.issuer}</p>
+                </div>
+                <div className={styles.certDate}>{cert.acquiredAt}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+      </main>
     </div>
   );
 }
