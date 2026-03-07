@@ -6,6 +6,7 @@
   padding: 0;
   margin: 0;
   display: flex;
+  scroll-behavior: smooth;
 }
 
 /* Sidebar - Dark Navy */
@@ -31,7 +32,8 @@
 .avatarCircle {
   width: 100px;
   height: 100px;
-  background: #10b981; /* Emerald accent */
+  background: #10b981;
+  /* Emerald accent */
   border-radius: 50%;
   margin: 0 auto 24px;
   display: flex;
@@ -56,6 +58,7 @@
   margin: 0;
   letter-spacing: 0.02em;
 }
+
 .statusText {
   font-size: 0.7rem;
   color: #94a3b8;
@@ -201,6 +204,10 @@
   margin-bottom: 120px;
 }
 
+.section:last-of-type {
+  margin-bottom: 0;
+}
+
 .sectionHeader {
   display: flex;
   align-items: center;
@@ -231,90 +238,54 @@
   background-color: #f1f5f9;
 }
 
-/* Career Timeline */
+/* Career (Work Experience) */
 .experienceList {
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  position: relative;
-}
-
-.experienceList::before {
-  content: "";
-  position: absolute;
-  left: 20px;
-  top: 0;
-  bottom: 0;
-  width: 2px;
-  background: #f1f5f9;
-}
-
-.expItemWrapper {
-  position: relative;
-  padding-left: 60px;
-}
-
-.expItemWrapper::before {
-  content: "";
-  position: absolute;
-  left: 16px;
-  top: 35px;
-  width: 10px;
-  height: 10px;
-  background: #ffffff;
-  border: 2px solid #10b981;
-  border-radius: 50%;
-  z-index: 1;
+  gap: 16px;
 }
 
 .expCard {
   background: #ffffff;
   border: 1px solid #f1f5f9;
   border-radius: 16px;
-  padding: 30px;
+  padding: 24px 30px;
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   transition: all 0.2s;
 }
 
+.expCard:hover {
+  border-color: #10b981;
+}
 
+.expInfo {
+  flex: 1;
+}
 
-.expInfo h3 {
+.expCompany {
   font-size: 1.1rem;
   font-weight: 800;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .expRole {
   font-size: 0.9rem;
   font-weight: 600;
   color: #10b981;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 
 .expDate {
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   color: #94a3b8;
-  display: flex;
-  align-items: center;
-  gap: 6px;
 }
 
 .expSummary {
-  margin-top: 16px;
+  margin-top: 12px;
   font-size: 0.9rem;
   color: #64748b;
   line-height: 1.6;
-}
-
-.currentBadge {
-  background: #f0fdf4;
-  color: #166534;
-  padding: 4px 10px;
-  border-radius: 100px;
-  font-size: 0.65rem;
-  font-weight: 800;
 }
 
 /* Tech Stack */
@@ -349,7 +320,7 @@
   font-size: 0.95rem;
   font-weight: 600;
   transition: all 0.2s;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .techPill:hover {
@@ -605,13 +576,68 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes scaleUp {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Education */
+.eduList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.eduItem {
+  background: #ffffff;
+  border: 1px solid #f1f5f9;
+  border-radius: 16px;
+  padding: 24px 30px;
+  display: flex;
+  align-items: center;
+  transition: all 0.2s;
+}
+
+.eduItem:hover {
+  border-color: #10b981;
+}
+
+.eduInfo {
+  flex: 1;
+}
+
+.eduSchool {
+  font-size: 1.1rem;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+
+.eduMajor {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #10b981;
+  margin-bottom: 4px;
+}
+
+.eduDate {
+  font-size: 0.85rem;
+  color: #94a3b8;
 }
 
 /* Certifications */
@@ -657,31 +683,27 @@
   font-weight: 700;
 }
 
-.fadeIn {
-  animation: fadeUp 0.8s ease forwards;
-}
-
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
 
 @media (max-width: 1024px) {
   .pageWrapper {
     flex-direction: column;
   }
+
   .sidebar {
     width: 100%;
     height: auto;
     position: static;
   }
+
   .mainContainer {
     padding: 60px 24px;
   }
+
   .projectCard {
     flex-direction: column;
     height: auto;
   }
+
   .projectImage {
     width: 100%;
     height: 200px;

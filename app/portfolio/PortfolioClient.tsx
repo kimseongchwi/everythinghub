@@ -6,22 +6,14 @@ import {
   Mail,
   Phone,
   Github,
-  Globe,
   ExternalLink,
   FileText,
   Award,
   Briefcase,
-  Layers,
   FolderOpen,
-  ChevronDown,
-  ArrowUpRight,
   Code2,
   Cpu,
-  Database,
-  Cloud,
-  Layers3,
-  Terminal,
-  ChevronRight,
+  GraduationCap,
   X
 } from 'lucide-react';
 import TechIcon from '@/components/TechIcon';
@@ -32,15 +24,41 @@ interface PortfolioClientProps {
 }
 
 export default function PortfolioClient({ initialCerts, portfolioData }: PortfolioClientProps) {
-  const [activeNav, setActiveNav] = useState('경력');
+  const [activeNav, setActiveNav] = useState('edu');
   const [selectedProject, setSelectedProject] = useState<any>(null);
 
   const navItems = [
-    { label: '경력', icon: <Briefcase size={16} />, id: 'career' },
+    { label: '학력', icon: <GraduationCap size={16} />, id: 'edu' },
     { label: '기술 스택', icon: <Cpu size={16} />, id: 'skills' },
+    { label: '경력', icon: <Briefcase size={16} />, id: 'career' },
     { label: '프로젝트', icon: <FolderOpen size={16} />, id: 'projects' },
     { label: '자격증', icon: <Award size={16} />, id: 'certs' },
   ];
+
+  React.useEffect(() => {
+    const observerOptions = {
+      root: null,
+      rootMargin: '-20% 0px -70% 0px', // 스크롤 시 해당 섹션이 화면 중앙 근처에 올 때 활성화
+      threshold: 0,
+    };
+
+    const observerCallback = (entries: IntersectionObserverEntry[]) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setActiveNav(entry.target.id);
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(observerCallback, observerOptions);
+
+    navItems.forEach((item) => {
+      const element = document.getElementById(item.id);
+      if (element) observer.observe(element);
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <div className={styles.pageWrapper}>
@@ -69,26 +87,19 @@ export default function PortfolioClient({ initialCerts, portfolioData }: Portfol
           </div>
         </div>
 
-        <div className={styles.sidebarSection}>
-          <span className={styles.sidebarLabel}>EDUCATION</span>
-          {portfolioData.education.map((edu: any, i: number) => (
-            <div key={i} style={{ marginBottom: '24px' }}>
-              <p style={{ fontSize: '0.9rem', fontWeight: 800, margin: '0 0 4px 0' }}>{edu.school}</p>
-              <p style={{ fontSize: '0.75rem', color: '#94a3b8', margin: '0 0 4px 0' }}>{edu.major}</p>
-              <p style={{ fontSize: '0.7rem', color: '#64748b', margin: 0 }}>{edu.degreeStatus} · {edu.period}</p>
-            </div>
-          ))}
-        </div>
 
         <div className={styles.sidebarSection}>
           <span className={styles.sidebarLabel}>QUICK NAV</span>
           <div className={styles.navMenu}>
             {navItems.map((item) => (
-              <a 
-                key={item.id} 
-                href={`#${item.id}`} 
-                className={`${styles.navItem} ${activeNav === item.label ? styles.navItemActive : ''}`}
-                onClick={() => setActiveNav(item.label)}
+              <a
+                key={item.id}
+                href={`#${item.id}`}
+                className={`${styles.navItem} ${activeNav === item.id ? styles.navItemActive : ''}`}
+                onClick={(e) => {
+                  // e.preventDefault(); // 스무스 스크롤을 원한다면 추가 가능하지만, 기본 href 기능 유지
+                  setActiveNav(item.id);
+                }}
               >
                 {item.icon}
                 {item.label}
@@ -101,8 +112,8 @@ export default function PortfolioClient({ initialCerts, portfolioData }: Portfol
       </aside>
 
       {/* Content Area */}
-      <main className={`${styles.mainContainer} ${styles.fadeIn}`}>
-        
+      <main className={styles.mainContainer}>
+
         {/* Intro */}
         <section className={styles.introSection}>
           <div className={styles.introSmallTitle}>PORTFOLIO</div>
@@ -110,35 +121,27 @@ export default function PortfolioClient({ initialCerts, portfolioData }: Portfol
             안녕하세요,<br />
             <span>{portfolioData.position}</span> {portfolioData.name}입니다.
           </h2>
-          <div 
-            className={styles.introText} 
+          <div
+            className={styles.introText}
             style={{ whiteSpace: 'pre-wrap' }}
             dangerouslySetInnerHTML={{ __html: portfolioData.description }}
           />
         </section>
 
-        {/* Career (Work Experience) */}
-        <section id="career" className={styles.section}>
+        {/* Education */}
+        <section id="edu" className={styles.section}>
           <div className={styles.sectionHeader}>
-            <div className={styles.sectionIcon}><Briefcase size={20} /></div>
-            <h2 className={styles.sectionTitle}>경력</h2>
+            <div className={styles.sectionIcon}><GraduationCap size={20} /></div>
+            <h2 className={styles.sectionTitle}>학력</h2>
             <div className={styles.titleLine}></div>
           </div>
-          
-          <div className={styles.experienceList}>
-            {portfolioData.workExperience.map((work: any, i: number) => (
-              <div key={i} className={styles.expItemWrapper}>
-                <div className={styles.expCard}>
-                  <div className={styles.expInfo}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <h3>{work.company}</h3>
-                    </div>
-                    <div className={styles.expRole}>{work.role}</div>
-                    <div className={styles.expDate}>
-                      <FileText size={12} /> {work.period}
-                    </div>
-                    <p className={styles.expSummary}>{work.summary}</p>
-                  </div>
+          <div className={styles.eduList}>
+            {portfolioData.education.map((edu: any, i: number) => (
+              <div key={i} className={styles.eduItem}>
+                <div className={styles.eduInfo}>
+                  <h3 className={styles.eduSchool}>{edu.school}</h3>
+                  <div className={styles.eduMajor}>{edu.major} ({edu.degreeStatus})</div>
+                  <div className={styles.eduDate}>{edu.period}</div>
                 </div>
               </div>
             ))}
@@ -152,7 +155,7 @@ export default function PortfolioClient({ initialCerts, portfolioData }: Portfol
             <h2 className={styles.sectionTitle}>기술 스택</h2>
             <div className={styles.titleLine}></div>
           </div>
-          
+
           {portfolioData.skills.map((group: any, i: number) => (
             <div key={i} className={styles.techCategoryBlock}>
               <span className={styles.techCategoryLabel}>{group.category}</span>
@@ -168,6 +171,28 @@ export default function PortfolioClient({ initialCerts, portfolioData }: Portfol
           ))}
         </section>
 
+        {/* Career (Work Experience) */}
+        <section id="career" className={styles.section}>
+          <div className={styles.sectionHeader}>
+            <div className={styles.sectionIcon}><Briefcase size={20} /></div>
+            <h2 className={styles.sectionTitle}>경력</h2>
+            <div className={styles.titleLine}></div>
+          </div>
+
+          <div className={styles.experienceList}>
+            {portfolioData.workExperience.map((work: any, i: number) => (
+              <div key={i} className={styles.expCard}>
+                <div className={styles.expInfo}>
+                  <h3 className={styles.expCompany}>{work.company}</h3>
+                  <div className={styles.expRole}>{work.role}</div>
+                  <div className={styles.expDate}>{work.period}</div>
+                  <p className={styles.expSummary}>{work.summary}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
         {/* Projects */}
         <section id="projects" className={styles.section}>
           <div className={styles.sectionHeader}>
@@ -175,7 +200,7 @@ export default function PortfolioClient({ initialCerts, portfolioData }: Portfol
             <h2 className={styles.sectionTitle}>프로젝트</h2>
             <div className={styles.titleLine}></div>
           </div>
-          
+
           <div className={styles.projectsGrid}>
             {portfolioData.sideProjects.map((proj: any) => (
               <div key={proj.id} className={styles.projectCard}>
@@ -198,11 +223,11 @@ export default function PortfolioClient({ initialCerts, portfolioData }: Portfol
                       <span className={styles.currentBadge}>{proj.status}</span>
                     )}
                   </div>
-                  
+
                   {proj.description && (
                     <p className={styles.projectDesc}>{proj.description}</p>
                   )}
-                  
+
                   <div className={styles.projectTechs}>
                     {proj.techStack.slice(0, 5).map((tech: string, k: number) => (
                       <span key={k} className={styles.projectTechTag}>
@@ -214,7 +239,7 @@ export default function PortfolioClient({ initialCerts, portfolioData }: Portfol
                   </div>
 
                   <div className={styles.projectActions}>
-                    <button 
+                    <button
                       onClick={() => setSelectedProject(proj)}
                       className={`${styles.btnAction} ${styles.btnActionOutline}`}
                     >
@@ -258,9 +283,9 @@ export default function PortfolioClient({ initialCerts, portfolioData }: Portfol
                   </div>
                 </div>
                 <div className={styles.modalFooter}>
-                  <button 
-                    className={styles.btnAction} 
-                    style={{ maxWidth: '100px' }} 
+                  <button
+                    className={styles.btnAction}
+                    style={{ maxWidth: '100px' }}
                     onClick={() => setSelectedProject(null)}
                   >
                     닫기
@@ -278,7 +303,7 @@ export default function PortfolioClient({ initialCerts, portfolioData }: Portfol
             <h2 className={styles.sectionTitle}>자격증</h2>
             <div className={styles.titleLine}></div>
           </div>
-          
+
           <div className={styles.certsList}>
             {initialCerts.map((cert, i) => (
               <div key={i} className={styles.certItem}>
