@@ -128,11 +128,11 @@ export default function WorkAdminPage() {
                     <div style={{ padding: '32px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                         <div style={{ display: 'flex', gap: '20px' }}>
-                          <div style={{ 
-                            width: '48px', 
-                            height: '48px', 
-                            borderRadius: '12px', 
-                            background: '#f8fafc', 
+                          <div style={{
+                            width: '48px',
+                            height: '48px',
+                            borderRadius: '12px',
+                            background: '#f8fafc',
                             border: '1px solid #e2e8f0',
                             display: 'flex',
                             alignItems: 'center',
@@ -146,7 +146,7 @@ export default function WorkAdminPage() {
                               <h4 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800, color: '#0f172a' }}>{work.companyName}</h4>
                               {work.isCurrent && (
                                 <span className={`${styles.badge} ${styles.badgeSuccess}`}>
-                                  <CheckCircle2 size={12} style={{ marginRight: '4px' }} /> 재직 중
+                                  재직 중
                                 </span>
                               )}
                             </div>
@@ -154,7 +154,6 @@ export default function WorkAdminPage() {
                               {work.position && `${work.position} | `}{work.role}
                             </p>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: '#94a3b8', marginTop: '8px' }}>
-                              <Calendar size={14} />
                               <span>{work.startDate} ~ {work.isCurrent ? '현재' : work.endDate}</span>
                             </div>
                           </div>
@@ -170,14 +169,14 @@ export default function WorkAdminPage() {
                           <p style={{ margin: 0, fontSize: '0.9rem', color: '#1e293b', fontWeight: 600 }}>{work.summary}</p>
                         </div>
                       )}
-                      
+
                       {work.description && (
                         <div style={{ marginTop: '20px' }}>
-                          <p style={{ 
-                            margin: 0, 
-                            fontSize: '0.9rem', 
-                            color: '#64748b', 
-                            whiteSpace: 'pre-wrap', 
+                          <p style={{
+                            margin: 0,
+                            fontSize: '0.9rem',
+                            color: '#64748b',
+                            whiteSpace: 'pre-wrap',
                             lineHeight: 1.7,
                             paddingLeft: '12px',
                             borderLeft: '3px solid #f1f5f9'
@@ -237,12 +236,12 @@ export default function WorkAdminPage() {
                 <div className={styles.field}>
                   <label>퇴사일 / 상태</label>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    <input 
-                      type="text" 
-                      className={styles.input} 
-                      placeholder="예: 2024.02" 
-                      value={formData.endDate} 
-                      onChange={e => setFormData({ ...formData, endDate: e.target.value, isCurrent: false })} 
+                    <input
+                      type="text"
+                      className={styles.input}
+                      placeholder="예: 2024.02"
+                      value={formData.endDate}
+                      onChange={e => setFormData({ ...formData, endDate: e.target.value, isCurrent: false })}
                       disabled={formData.isCurrent}
                       style={{ opacity: formData.isCurrent ? 0.5 : 1, backgroundColor: formData.isCurrent ? '#f1f5f9' : '#fff' }}
                     />
