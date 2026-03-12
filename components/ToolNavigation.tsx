@@ -1,7 +1,7 @@
 "use client";
 
 import Link from 'next/link';
-import { Wallet, Target, Code } from 'lucide-react';
+import { Wallet, Target, Code, ShoppingCart } from 'lucide-react';
 import React, { useEffect, useRef } from 'react';
 
 const allTools = [
@@ -25,16 +25,18 @@ const allTools = [
     hoverBorder: 'hover:border-emerald-300',
     icon: Target,
   },
-  // {
-  //   slug: 'code-archive',
-  //   name: '코드 아카이브',
-  //   description: '자주 쓰는 코드 스니펫 모음',
-  //   color: 'text-slate-600',
-  //   bg: 'bg-slate-100',
-  //   border: 'border-slate-200',
-  //   hoverBorder: 'hover:border-slate-400',
-  //   icon: Code,
-  // },
+  ...(process.env.NODE_ENV === 'development' ? [
+    {
+      slug: 'shopping-radar',
+      name: '쇼핑 레이더',
+      description: '전 쇼핑몰 전방위 최저가 스캔 및 인사이트',
+      color: 'text-blue-500',
+      bg: 'bg-blue-50',
+      border: 'border-blue-100',
+      hoverBorder: 'hover:border-blue-300',
+      icon: ShoppingCart,
+    }
+  ] : []),
 ];
 
 interface ToolNavigationProps {

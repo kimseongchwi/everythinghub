@@ -1,10 +1,12 @@
 import Link from 'next/link';
-import { Wallet, Target, Code } from 'lucide-react';
+import { Wallet, Target, Code, ShoppingCart } from 'lucide-react';
 
 const projects = [
   { slug: 'salary-calculator', name: '실수령 계산기', color: 'text-purple-500', bg: 'bg-purple-50', icon: Wallet },
   { slug: 'target-amount-simulator', name: '목표금액 시뮬레이터', color: 'text-emerald-500', bg: 'bg-emerald-50', icon: Target },
-  // { slug: 'code-archive', name: '코드 아카이브', color: 'text-slate-700', bg: 'bg-slate-100', icon: Code },
+  ...(process.env.NODE_ENV === 'development' ? [
+    { slug: 'shopping-radar', name: '쇼핑 레이더', color: 'text-blue-500', bg: 'bg-blue-50', icon: ShoppingCart }
+  ] : []),
 ];
 
 export default function HomePage() {
