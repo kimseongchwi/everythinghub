@@ -1,5 +1,6 @@
 import { put, del } from '@vercel/blob';
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import prisma from '@/lib/prisma';
 
 // 메인 사용자 정보 조회 헬퍼
@@ -184,6 +185,7 @@ export async function POST(request: Request) {
           });
         }
 
+        revalidatePath('/portfolio');
         return NextResponse.json(updated);
       }
     }
@@ -207,6 +209,7 @@ export async function POST(request: Request) {
           attachmentId: attachmentId || null,
         },
       });
+      revalidatePath('/portfolio');
       return NextResponse.json(cert);
     }
 
@@ -224,6 +227,7 @@ export async function POST(request: Request) {
           userId: user.id
         }
       });
+      revalidatePath('/portfolio');
       return NextResponse.json(tech);
     }
 
@@ -245,6 +249,7 @@ export async function POST(request: Request) {
           userId: user.id
         }
       });
+      revalidatePath('/portfolio');
       return NextResponse.json(work);
     }
 
@@ -297,6 +302,7 @@ export async function POST(request: Request) {
           workExperienceId: workExperienceId || null,
         },
       });
+      revalidatePath('/portfolio');
       return NextResponse.json(project);
     }
 
@@ -379,13 +385,14 @@ export async function PATCH(request: Request) {
             isCurrent: isCurrent || false,
             userId: id
           }
-        });
-      }
+            });
+          }
 
-      return NextResponse.json(updated);
-    }
+          revalidatePath('/portfolio');
+          return NextResponse.json(updated);
+        }
 
-    if (target === 'certs') {
+        if (target === 'certs') {
       if (!id) return NextResponse.json({ error: 'ID가 필요합니다.' }, { status: 400 });
       const { title, issuer, status, acquiredAt, attachmentId, sortOrder } = body;
       const updated = await prisma.certification.update({
@@ -399,6 +406,7 @@ export async function PATCH(request: Request) {
           attachmentId: attachmentId || null,
         },
       });
+      revalidatePath('/portfolio');
       return NextResponse.json(updated);
     }
 
@@ -415,6 +423,7 @@ export async function PATCH(request: Request) {
           sortOrder: sortOrder ? Number(sortOrder) : 0,
         },
       });
+      revalidatePath('/portfolio');
       return NextResponse.json(updated);
     }
 
@@ -435,6 +444,7 @@ export async function PATCH(request: Request) {
           sortOrder: sortOrder ? Number(sortOrder) : 0,
         },
       });
+      revalidatePath('/portfolio');
       return NextResponse.json(updated);
     }
 
@@ -457,6 +467,7 @@ export async function PATCH(request: Request) {
       }).filter(Boolean);
 
       await Promise.all(updates);
+      revalidatePath('/portfolio');
       return NextResponse.json({ success: true });
     }
 
@@ -482,6 +493,7 @@ export async function PATCH(request: Request) {
           sortOrder: sortOrder ? Number(sortOrder) : 0,
         },
       });
+      revalidatePath('/portfolio');
       return NextResponse.json(updated);
     }
 
@@ -502,6 +514,7 @@ export async function PATCH(request: Request) {
           data: { isVisible: false }
         });
       }
+      revalidatePath('/portfolio');
       return NextResponse.json({ success: true });
     }
 
@@ -544,6 +557,7 @@ export async function DELETE(request: Request) {
       default:
         return NextResponse.json({ error: '잘못된 요청 대상입니다.' }, { status: 400 });
     }
+    revalidatePath('/portfolio');
     return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error('API 삭제 오류:', error);

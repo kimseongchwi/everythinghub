@@ -54,6 +54,10 @@ export default function ConditionalNavigation({
           <div className="flex flex-col md:flex-row justify-center items-center gap-4 md:gap-6 mb-3 text-[11px] font-bold text-gray-400 tracking-tight">
             <Link href="/privacy" className="hover:text-black transition-colors">개인정보처리방침</Link>
             <span className="hidden md:inline text-gray-200">|</span>
+            <Link href="/terms" className="hover:text-black transition-colors">이용약관</Link>
+            <span className="hidden md:inline text-gray-200">|</span>
+            <Link href="/contact" className="hover:text-black transition-colors">문의하기</Link>
+            <span className="hidden md:inline text-gray-200">|</span>
             <div className="flex gap-4 text-[10px] tracking-normal">
               <a href="mailto:kimsung01265@gmail.com" className="hover:text-black transition-colors lowercase">kimsung01265@gmail.com</a>
               <a href="mailto:ghfkddl665@naver.com" className="hover:text-black transition-colors lowercase">ghfkddl665@naver.com</a>
