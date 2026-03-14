@@ -255,9 +255,9 @@
   transition: all 0.2s;
 }
 
-.expCard:hover {
+/* .expCard:hover {
   border-color: #10b981;
-}
+} */
 
 .expInfo {
   flex: 1;
@@ -614,9 +614,9 @@
   transition: all 0.2s;
 }
 
-.eduItem:hover {
+/* .eduItem:hover {
   border-color: #10b981;
-}
+} */
 
 .eduInfo {
   flex: 1;
